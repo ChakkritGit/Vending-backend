@@ -34,6 +34,7 @@ model Drugs {
   status    Boolean    @default(true)
   picture   String?    @db.VarChar(255)
   Inventory Inventory?
+  Orders    Orders[]
   comment   String?    @db.VarChar(155)
   createdAt DateTime   @default(now())
   updatedAt DateTime   @default(now()) @updatedAt
@@ -62,13 +63,43 @@ model Machine {
   capacity    Int         @db.Integer
   status      Boolean     @default(true)
   Inventory   Inventory[]
+  Orders      Orders[]
   comment     String?     @db.VarChar(155)
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @default(now()) @updatedAt
 }
 
 model Prescriptions {
-  id String @id @db.VarChar(100)
+  id               String   @id @db.VarChar(100)
+  prescriptionDate String   @db.VarChar(200)
+  hn               String   @db.VarChar(20)
+  an               String   @db.VarChar(20)
+  patientName      String   @db.VarChar(200)
+  wardCode         String   @db.VarChar(20)
+  wardDesc         String   @db.VarChar(200)
+  priorityCode     String   @db.VarChar(20)
+  priorityDesc     String   @db.VarChar(200)
+  status           Boolean  @default(true)
+  order            Orders[]
+  comment          String?  @db.VarChar(155)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @default(now()) @updatedAt
+}
+
+model Orders {
+  id             String        @id @db.VarChar(100)
+  prescriptionId String        @db.VarChar(100)
+  drugId         String        @db.VarChar(100)
+  machineId      String        @db.VarChar(100)
+  qty            Int           @db.Integer
+  unit           String        @db.VarChar(150)
+  prescription   Prescriptions @relation(fields: [prescriptionId], references: [id])
+  drug           Drugs         @relation(fields: [drugId], references: [id])
+  machine        Machine       @relation(fields: [machineId], references: [id])
+  status         Boolean       @default(true)
+  comment        String?       @db.VarChar(155)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @default(now()) @updatedAt
 }
 
 enum Role {

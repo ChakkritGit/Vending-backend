@@ -67,7 +67,9 @@ model Machine {
   updatedAt   DateTime    @default(now()) @updatedAt
 }
 
-
+model Prescriptions {
+  id String @id @db.VarChar(100)
+}
 
 enum Role {
   SUPER

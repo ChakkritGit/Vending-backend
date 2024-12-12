@@ -7,6 +7,7 @@ import { DrugsModule } from './drugs/drugs.module';
 import { MachineModule } from './machine/machine.module';
 import { InventoryModule } from './inventory/inventory.module';
 import { PrescriptionsModule } from './prescriptions/prescriptions.module';
+import { LoggerMiddleware } from './utils/logger.middleware';
 
 @Module({
   imports: [ConfigModule.forRoot(), UsersModule, AuthModule, DrugsModule, MachineModule, InventoryModule, PrescriptionsModule],
@@ -19,5 +20,8 @@ export class AppModule implements NestModule {
         { path: 'users', method: RequestMethod.GET },
         { path: 'users', method: RequestMethod.POST },
       );
+    consumer
+      .apply(LoggerMiddleware)
+      .forRoutes('*');
   }
 }

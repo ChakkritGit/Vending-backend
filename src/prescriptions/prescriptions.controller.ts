@@ -19,7 +19,7 @@ export class PrescriptionsController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.prescriptionsService.findOne(+id);
+    return this.prescriptionsService.findOne(id);
   }
 
   @Patch(':id')
@@ -29,6 +29,6 @@ export class PrescriptionsController {
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.prescriptionsService.remove(+id);
+    return this.prescriptionsService.remove(id);
   }
 }

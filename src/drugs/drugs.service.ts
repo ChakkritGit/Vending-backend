@@ -57,10 +57,10 @@ export class DrugsService {
   }
 
   async findAll() {
-    const response = await this.prisma.drugs.findMany({
+    const result = await this.prisma.drugs.findMany({
       orderBy: { createdAt: 'desc' }
     })
-    return response;
+    return result;
   }
 
   async findOne(id: string) {
@@ -71,8 +71,33 @@ export class DrugsService {
     return drug;
   }
 
-  update(id: number, updateDrugDto: UpdateDrugDto) {
-    return `This action updates a #${id} drug`;
+  async update(id: string, updateDrugDto: Drugs) {
+    const { drugName, status, unit, weight, picture, comment } = updateDrugDto
+    const drug = await this.prisma.drugs.findUnique({
+      where: { id },
+    });
+
+    if (!drug) {
+      await this.deleteFile(updateDrugDto.picture);
+      throw new HttpException('Drug not found!', HttpStatus.NOT_FOUND);
+    }
+
+    const result = await this.prisma.drugs.update({
+      where: { id },
+      data: {
+        drugName,
+        unit,
+        picture: picture,
+        weight: Number(weight),
+        status: String(status) === "0" ? false : true,
+        comment: comment,
+        updatedAt: getDateFormat(new Date()),
+      }
+    })
+
+    await this.deleteFile(drug.picture);
+
+    return result;
   }
 
   async remove(id: string) {
@@ -80,10 +105,10 @@ export class DrugsService {
       where: { id }
     })
     if (!drug) throw new HttpException('Drug not found!', HttpStatus.NOT_FOUND);
-    const response = await this.prisma.drugs.delete({
+    const result = await this.prisma.drugs.delete({
       where: { id }
     })
-    await this.deleteFile(response.picture);
+    await this.deleteFile(result.picture);
     return "this drug has been deleted!";
   }
 }

@@ -4,9 +4,12 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtMiddleware } from './middleware/jwt.middleware';
 import { DrugsModule } from './drugs/drugs.module';
+import { MachineModule } from './machine/machine.module';
+import { InventoryModule } from './inventory/inventory.module';
+import { PrescriptionsModule } from './prescriptions/prescriptions.module';
 
 @Module({
-  imports: [ConfigModule.forRoot(), UsersModule, AuthModule, DrugsModule],
+  imports: [ConfigModule.forRoot(), UsersModule, AuthModule, DrugsModule, MachineModule, InventoryModule, PrescriptionsModule],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

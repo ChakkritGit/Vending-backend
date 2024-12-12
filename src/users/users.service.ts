@@ -88,7 +88,7 @@ export class UsersService {
   }
 
   async findOne(id: string) {
-    const findUser = await this.prisma.users.findUnique({
+    const user = await this.prisma.users.findUnique({
       select: {
         id: true,
         username: true,
@@ -103,22 +103,22 @@ export class UsersService {
       where: { id: id },
     });
 
-    if (!findUser) throw new HttpException('User not found!', HttpStatus.NOT_FOUND);
+    if (!user) throw new HttpException('User not found!', HttpStatus.NOT_FOUND);
 
-    return findUser;
+    return user;
   };
 
   async update(id: string, updateUserDto: Users) {
-    let { username, display, picture, role, comment, status } = updateUserDto
-    const findUser = await this.prisma.users.findUnique({
+    const { username, display, picture, role, comment, status } = updateUserDto
+    const user = await this.prisma.users.findUnique({
       where: { id },
     });
 
-    if (!findUser) {
+    if (!user) {
       await this.deleteFile(updateUserDto.picture);
       throw new HttpException('User not found!', HttpStatus.NOT_FOUND);
     }
-    const response = await this.prisma.users.update({
+    const result = await this.prisma.users.update({
       select: {
         id: true,
         username: true,
@@ -142,21 +142,21 @@ export class UsersService {
       }
     })
 
-    await this.deleteFile(findUser.picture);
+    await this.deleteFile(result.picture);
 
-    return response;
+    return result;
   }
 
   async remove(id: string) {
-    const findUser = await this.prisma.users.findUnique({
+    const user = await this.prisma.users.findUnique({
       where: { id: id },
     });
 
-    if (!findUser) throw new HttpException('User not found!', HttpStatus.NOT_FOUND);
-    const response = await this.prisma.users.delete({
+    if (!user) throw new HttpException('User not found!', HttpStatus.NOT_FOUND);
+    const result = await this.prisma.users.delete({
       where: { id }
     })
-    await this.deleteFile(response.picture);
+    await this.deleteFile(result.picture);
     return "this user has been deleted!";
   }
 }

@@ -18,13 +18,13 @@ export class AuthService {
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) throw new HttpException('Invalid password!', HttpStatus.BAD_REQUEST);
     const token = this.jwtService.sign({ id: user.id, display: user.display, role: user.role, status: user.status })
-    const response = {
+    const result = {
       display: user.display,
       picture: user.picture,
       status: user.status,
       token: token
     }
-    return response;
+    return result;
   }
 
   async reset(id: string, updateAuthDto: Users) {

@@ -97,6 +97,7 @@ export class UsersController {
     const imageUrl = `/uploads/users/${file.filename}`;
 
     updateUserDto.picture = imageUrl;
+
     return this.usersService.update(id, updateUserDto);
   }
 

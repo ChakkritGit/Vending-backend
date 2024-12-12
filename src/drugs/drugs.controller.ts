@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UploadedFile, UseInterceptors, HttpCode } from '@nestjs/common';
 import { DrugsService } from './drugs.service';
 import { CreateDrugDto } from './dto/create-drug.dto';
 import { UpdateDrugDto } from './dto/update-drug.dto';
@@ -63,8 +63,44 @@ export class DrugsController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateDrugDto: UpdateDrugDto) {
-    return this.drugsService.update(+id, updateDrugDto);
+  @HttpCode(200)
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage: diskStorage({
+        destination: (req, file, callback) => {
+          const uploadPath = './uploads/drugs';
+
+          if (!existsSync('./uploads')) {
+            mkdirSync('./uploads');
+          }
+
+          if (!existsSync('./uploads/drugs')) {
+            mkdirSync('./uploads/drugs');
+          }
+
+          callback(null, uploadPath);
+        },
+        filename: (req, file, callback) => {
+          const fileExtension = extname(file.originalname);
+          const fileName = `img-${uuidv4()}${fileExtension}`;
+          callback(null, fileName);
+        },
+      }),
+      limits: {
+        fileSize: 10 * 1024 * 1024,
+      },
+    }),
+  )
+  update(
+    @UploadedFile() file: Express.Multer.File,
+    @Param('id') id: string,
+    @Body() updateDrugDto: Drugs) {
+
+    const imageUrl = `/uploads/drugs/${file.filename}`;
+
+    updateDrugDto.picture = imageUrl;
+
+    return this.drugsService.update(id, updateDrugDto);
   }
 
   @Delete(':id')

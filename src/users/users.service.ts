@@ -1,5 +1,4 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { Users } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
@@ -43,6 +42,7 @@ export class UsersService {
           picture: true,
           role: true,
           status: true,
+          comment: true,
           createdAt: true,
           updatedAt: true,
         },
@@ -79,6 +79,7 @@ export class UsersService {
         picture: true,
         role: true,
         status: true,
+        comment: true,
         createdAt: true,
         updatedAt: true
       },
@@ -95,6 +96,7 @@ export class UsersService {
         picture: true,
         role: true,
         status: true,
+        comment: true,
         createdAt: true,
         updatedAt: true
       },
@@ -106,8 +108,43 @@ export class UsersService {
     return findUser;
   };
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(id: string, updateUserDto: Users) {
+    let { username, display, picture, role, comment, status } = updateUserDto
+    const findUser = await this.prisma.users.findUnique({
+      where: { id },
+    });
+
+    if (!findUser) {
+      await this.deleteFile(updateUserDto.picture);
+      throw new HttpException('User not found!!', HttpStatus.NOT_FOUND);
+    }
+    const response = await this.prisma.users.update({
+      select: {
+        id: true,
+        username: true,
+        display: true,
+        picture: true,
+        role: true,
+        status: true,
+        comment: true,
+        createdAt: true,
+        updatedAt: true
+      },
+      where: { id },
+      data: {
+        username: username,
+        display: display,
+        picture: picture,
+        role: role,
+        status: String(status) === "0" ? false : true,
+        comment: comment,
+        updatedAt: getDateFormat(new Date()),
+      }
+    })
+
+    await this.deleteFile(findUser.picture);
+
+    return response;
   }
 
   async remove(id: string) {
@@ -115,7 +152,7 @@ export class UsersService {
       where: { id: id },
     });
 
-    if (!findUser) throw new HttpException('User not found!!', HttpStatus.NOT_FOUND);
+    if (!findUser) throw new HttpException('User not found!', HttpStatus.NOT_FOUND);
     const response = await this.prisma.users.delete({
       where: { id }
     })

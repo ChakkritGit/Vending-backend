@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, HttpCode } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Users } from '@prisma/client';
@@ -58,8 +58,39 @@ export class UsersController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(+id, updateUserDto);
+  @HttpCode(200)
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage: diskStorage({
+        destination: (req, file, callback) => {
+          const uploadPath = './uploads';
+
+          if (!existsSync(uploadPath)) {
+            mkdirSync(uploadPath);
+          }
+
+          callback(null, uploadPath);
+        },
+        filename: (req, file, callback) => {
+          const fileExtension = extname(file.originalname);
+          const fileName = `img-${uuidv4()}${fileExtension}`;
+          callback(null, fileName);
+        },
+      }),
+      limits: {
+        fileSize: 10 * 1024 * 1024,
+      },
+    }),
+  )
+  update(
+    @UploadedFile() file: Express.Multer.File,
+    @Param('id') id: string,
+    @Body() updateUserDto: Users) {
+
+    const imageUrl = `/uploads/${file.filename}`;
+
+    updateUserDto.picture = imageUrl;
+    return this.usersService.update(id, updateUserDto);
   }
 
   @Delete(':id')

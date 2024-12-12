@@ -13,7 +13,8 @@ export class AuthController {
   }
 
   @Patch('reset/:id')
+  @HttpCode(200)
   reset(@Param('id') id: string, @Body() updateAuthDto: Users) {
-    return this.authService.reset(+id, updateAuthDto);
+    return this.authService.reset(id, updateAuthDto);
   }
 }

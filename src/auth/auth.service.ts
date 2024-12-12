@@ -27,7 +27,21 @@ export class AuthService {
     return response;
   }
 
-  reset(id: number, updateAuthDto: Users) {
-    return `This action updates a #${id} auth ${updateAuthDto.password}`;
+  async reset(id: string, updateAuthDto: Users) {
+    const { newPassword, oldPassword } = updateAuthDto as unknown as { newPassword: string, oldPassword: string }
+    const user = await this.prisma.users.findFirst({
+      where: { id }
+    })
+    if (!user) throw new HttpException('User not found!', HttpStatus.NOT_FOUND);
+    const isPasswordValid = await bcrypt.compare(oldPassword, user.password);
+    if (!isPasswordValid) throw new HttpException('The old password is incorrect!', HttpStatus.BAD_REQUEST);
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await this.prisma.users.update({
+      where: { id },
+      data: {
+        password: hashedPassword
+      }
+    })
+    return "Password has been reset success!";
   }
 }

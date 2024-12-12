@@ -16,7 +16,7 @@ export class UsersService {
       await fs.unlink(`.${filePath}`);
       console.log(`🗑️  this image has been deleted [${filePath}]`)
     } catch (error) {
-      console.error(`Failed to delete file: ${filePath}`, error.message);
+      console.error(`Failed to delete file: [${filePath}]`);
     }
   }
 
@@ -101,7 +101,7 @@ export class UsersService {
       where: { id: id },
     });
 
-    if (!findUser) throw new HttpException('Can not find user!', HttpStatus.NOT_FOUND);
+    if (!findUser) throw new HttpException('User not found!!', HttpStatus.NOT_FOUND);
 
     return findUser;
   };
@@ -110,7 +110,16 @@ export class UsersService {
     return `This action updates a #${id} user`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async remove(id: string) {
+    const findUser = await this.prisma.users.findUnique({
+      where: { id: id },
+    });
+
+    if (!findUser) throw new HttpException('User not found!!', HttpStatus.NOT_FOUND);
+    const response = await this.prisma.users.delete({
+      where: { id }
+    })
+    await this.deleteFile(response.picture);
+    return "this user has been deleted!";
   }
 }

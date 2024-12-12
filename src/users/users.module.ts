@@ -13,7 +13,7 @@ import { join } from 'path';
       dest: './uploads',
     }),
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '../..', 'uploads'),
+      rootPath: join(__dirname, process.env.NODE_ENV === 'development' ? '../..' : '..', 'uploads'),
       serveRoot: '/uploads',
     })
   ],

@@ -12,7 +12,7 @@ export class AuthService {
   async login(loginBody: CreateAuthDto) {
     const { username, password } = loginBody
     const user = await this.prisma.users.findFirst({
-      where: { username }
+      where: { username: username.toLocaleLowerCase() }
     })
     if (!user) throw new HttpException('This username is not found!', HttpStatus.NOT_FOUND);
     const isPasswordValid = await bcrypt.compare(password, user.password);

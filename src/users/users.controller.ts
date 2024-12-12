@@ -1,6 +1,5 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, HttpCode } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { Users } from '@prisma/client';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -17,17 +16,21 @@ export class UsersController {
     FileInterceptor('image', {
       storage: diskStorage({
         destination: (req, file, callback) => {
-          const uploadPath = './uploads';
+          const uploadPath = './uploads/users';
 
-          if (!existsSync(uploadPath)) {
-            mkdirSync(uploadPath);
+          if (!existsSync('./uploads')) {
+            mkdirSync('./uploads');
+          }
+
+          if (!existsSync('./uploads/users')) {
+            mkdirSync('./uploads/users');
           }
 
           callback(null, uploadPath);
         },
         filename: (req, file, callback) => {
           const fileExtension = extname(file.originalname);
-          const fileName = `img-${uuidv4()}${fileExtension}`;
+          const fileName = `user-${uuidv4()}${fileExtension}`;
           callback(null, fileName);
         },
       }),
@@ -40,7 +43,7 @@ export class UsersController {
     @UploadedFile() file: Express.Multer.File,
     @Body() createUserDto: Users
   ) {
-    const imageUrl = `/uploads/${file.filename}`;
+    const imageUrl = `/uploads/users/${file.filename}`;
 
     createUserDto.picture = imageUrl;
 
@@ -63,10 +66,14 @@ export class UsersController {
     FileInterceptor('image', {
       storage: diskStorage({
         destination: (req, file, callback) => {
-          const uploadPath = './uploads';
+          const uploadPath = './uploads/users';
 
-          if (!existsSync(uploadPath)) {
-            mkdirSync(uploadPath);
+          if (!existsSync('./uploads')) {
+            mkdirSync('./uploads');
+          }
+
+          if (!existsSync('./uploads/users')) {
+            mkdirSync('./uploads/users');
           }
 
           callback(null, uploadPath);
@@ -87,7 +94,7 @@ export class UsersController {
     @Param('id') id: string,
     @Body() updateUserDto: Users) {
 
-    const imageUrl = `/uploads/${file.filename}`;
+    const imageUrl = `/uploads/users/${file.filename}`;
 
     updateUserDto.picture = imageUrl;
     return this.usersService.update(id, updateUserDto);

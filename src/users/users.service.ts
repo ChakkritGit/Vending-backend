@@ -13,9 +13,9 @@ export class UsersService {
   private async deleteFile(filePath: string) {
     try {
       await fs.unlink(`.${filePath}`);
-      console.log(`🗑️  this image has been deleted [${filePath}]`)
+      console.log(`🗑️  this image: [${filePath}] has been deleted!`)
     } catch (error) {
-      console.error(`Failed to delete file: [${filePath}]`);
+      console.error(`Failed to delete file: [${filePath}]!`);
     }
   }
 
@@ -48,7 +48,7 @@ export class UsersService {
         },
         data: {
           id: `UID-${uuidv4()}`,
-          username: username,
+          username: username.toLocaleLowerCase(),
           password: hashedPassword,
           display: display,
           picture: picture,
@@ -103,7 +103,7 @@ export class UsersService {
       where: { id: id },
     });
 
-    if (!findUser) throw new HttpException('User not found!!', HttpStatus.NOT_FOUND);
+    if (!findUser) throw new HttpException('User not found!', HttpStatus.NOT_FOUND);
 
     return findUser;
   };
@@ -116,7 +116,7 @@ export class UsersService {
 
     if (!findUser) {
       await this.deleteFile(updateUserDto.picture);
-      throw new HttpException('User not found!!', HttpStatus.NOT_FOUND);
+      throw new HttpException('User not found!', HttpStatus.NOT_FOUND);
     }
     const response = await this.prisma.users.update({
       select: {
@@ -132,7 +132,7 @@ export class UsersService {
       },
       where: { id },
       data: {
-        username: username,
+        username: username.toLocaleLowerCase(),
         display: display,
         picture: picture,
         role: role,

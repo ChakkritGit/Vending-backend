@@ -10,10 +10,10 @@ import { join } from 'path';
   imports: [
     PrismaModule,
     MulterModule.register({
-      dest: './dist/uploads',
+      dest: './uploads',
     }),
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'uploads'),
+      rootPath: join(__dirname, '../..', 'uploads'),
       serveRoot: '/uploads',
     })
   ],

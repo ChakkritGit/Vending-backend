@@ -17,7 +17,7 @@ export class UsersController {
     FileInterceptor('image', {
       storage: diskStorage({
         destination: (req, file, callback) => {
-          const uploadPath = './dist/uploads';
+          const uploadPath = './uploads';
 
           if (!existsSync(uploadPath)) {
             mkdirSync(uploadPath);

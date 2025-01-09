@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { Users } from '@prisma/client';
+import { Role, Users } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { JwtService } from '@nestjs/jwt';
@@ -19,9 +19,12 @@ export class AuthService {
     if (!isPasswordValid) throw new HttpException('Invalid password!', HttpStatus.BAD_REQUEST);
     const token = this.jwtService.sign({ id: user.id, display: user.display, role: user.role, status: user.status })
     const result = {
+      id: user.id,
+      username: user.username,
       display: user.display,
       picture: user.picture,
       status: user.status,
+      role: user.role,
       token: token
     }
     return result;

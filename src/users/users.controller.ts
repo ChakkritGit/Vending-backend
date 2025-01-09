@@ -1,37 +1,49 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, HttpCode } from '@nestjs/common';
-import { UsersService } from './users.service';
-import { Users } from '@prisma/client';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
-import { existsSync, mkdirSync } from 'fs';
-import { v4 as uuidv4 } from 'uuid';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseInterceptors,
+  UploadedFile,
+  HttpCode,
+  BadRequestException,
+} from '@nestjs/common'
+import { UsersService } from './users.service'
+import { Users } from '@prisma/client'
+import { FileInterceptor } from '@nestjs/platform-express'
+import { diskStorage } from 'multer'
+import { extname } from 'path'
+import { existsSync, mkdirSync } from 'fs'
+import { v4 as uuidv4 } from 'uuid'
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor (private readonly usersService: UsersService) {}
 
   @Post()
   @UseInterceptors(
     FileInterceptor('image', {
       storage: diskStorage({
         destination: (req, file, callback) => {
-          const uploadPath = './uploads/users';
+          const uploadPath = './uploads/users'
 
           if (!existsSync('./uploads')) {
-            mkdirSync('./uploads');
+            mkdirSync('./uploads')
           }
 
           if (!existsSync('./uploads/users')) {
-            mkdirSync('./uploads/users');
+            mkdirSync('./uploads/users')
           }
 
-          callback(null, uploadPath);
+          callback(null, uploadPath)
         },
         filename: (req, file, callback) => {
-          const fileExtension = extname(file.originalname);
-          const fileName = `user-${uuidv4()}${fileExtension}`;
-          callback(null, fileName);
+          const fileExtension = extname(file.originalname)
+          const fileName = `user-${uuidv4()}${fileExtension}`
+          callback(null, fileName)
         },
       }),
       limits: {
@@ -39,25 +51,28 @@ export class UsersController {
       },
     }),
   )
-  create(
+  create (
     @UploadedFile() file: Express.Multer.File,
-    @Body() createUserDto: Users
+    @Body() createUserDto: Users,
   ) {
-    const imageUrl = `/uploads/users/${file.filename}`;
+    if (!file) {
+      throw new BadRequestException('No file uploaded.')
+    }
 
-    createUserDto.picture = imageUrl;
+    const imageUrl = `/uploads/users/${file.filename}`
+    createUserDto.picture = imageUrl
 
-    return this.usersService.create(createUserDto);
+    return this.usersService.create(createUserDto)
   }
 
   @Get()
-  findAll() {
-    return this.usersService.findAll();
+  findAll () {
+    return this.usersService.findAll()
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(id);
+  findOne (@Param('id') id: string) {
+    return this.usersService.findOne(id)
   }
 
   @Patch(':id')
@@ -66,22 +81,22 @@ export class UsersController {
     FileInterceptor('image', {
       storage: diskStorage({
         destination: (req, file, callback) => {
-          const uploadPath = './uploads/users';
+          const uploadPath = './uploads/users'
 
           if (!existsSync('./uploads')) {
-            mkdirSync('./uploads');
+            mkdirSync('./uploads')
           }
 
           if (!existsSync('./uploads/users')) {
-            mkdirSync('./uploads/users');
+            mkdirSync('./uploads/users')
           }
 
-          callback(null, uploadPath);
+          callback(null, uploadPath)
         },
         filename: (req, file, callback) => {
-          const fileExtension = extname(file.originalname);
-          const fileName = `img-${uuidv4()}${fileExtension}`;
-          callback(null, fileName);
+          const fileExtension = extname(file.originalname)
+          const fileName = `img-${uuidv4()}${fileExtension}`
+          callback(null, fileName)
         },
       }),
       limits: {
@@ -89,20 +104,20 @@ export class UsersController {
       },
     }),
   )
-  update(
+  update (
     @UploadedFile() file: Express.Multer.File,
     @Param('id') id: string,
-    @Body() updateUserDto: Users) {
+    @Body() updateUserDto: Users,
+  ) {
+    const imageUrl = `/uploads/users/${file.filename}`
 
-    const imageUrl = `/uploads/users/${file.filename}`;
+    updateUserDto.picture = imageUrl
 
-    updateUserDto.picture = imageUrl;
-
-    return this.usersService.update(id, updateUserDto);
+    return this.usersService.update(id, updateUserDto)
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(id);
+  remove (@Param('id') id: string) {
+    return this.usersService.remove(id)
   }
 }

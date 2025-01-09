@@ -1,14 +1,5 @@
-/*
-  Warnings:
-
-  - You are about to drop the `User` table. If the table is not empty, all the data it contains will be lost.
-
-*/
 -- CreateEnum
 CREATE TYPE "Role" AS ENUM ('SUPER', 'ADMIN', 'USER');
-
--- DropTable
-DROP TABLE "User";
 
 -- CreateTable
 CREATE TABLE "Users" (
@@ -29,6 +20,7 @@ CREATE TABLE "Users" (
 -- CreateTable
 CREATE TABLE "Drugs" (
     "id" VARCHAR(100) NOT NULL,
+    "drugCode" VARCHAR(100) NOT NULL,
     "drugName" VARCHAR(200) NOT NULL,
     "unit" VARCHAR(155) NOT NULL,
     "weight" INTEGER NOT NULL,
@@ -73,38 +65,38 @@ CREATE TABLE "Machine" (
 );
 
 -- CreateTable
-CREATE TABLE "Prescriptions" (
-    "id" VARCHAR(100) NOT NULL,
-    "prescriptionDate" VARCHAR(200) NOT NULL,
-    "hn" VARCHAR(20) NOT NULL,
-    "an" VARCHAR(20) NOT NULL,
-    "patientName" VARCHAR(200) NOT NULL,
-    "wardCode" VARCHAR(20) NOT NULL,
-    "wardDesc" VARCHAR(200) NOT NULL,
-    "priorityCode" VARCHAR(20) NOT NULL,
-    "priorityDesc" VARCHAR(200) NOT NULL,
-    "status" BOOLEAN NOT NULL DEFAULT true,
-    "comment" VARCHAR(155),
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "Prescriptions_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
 CREATE TABLE "Orders" (
     "id" VARCHAR(100) NOT NULL,
     "prescriptionId" VARCHAR(100) NOT NULL,
     "drugId" VARCHAR(100) NOT NULL,
-    "machineId" VARCHAR(100) NOT NULL,
+    "drugName" VARCHAR(150) NOT NULL,
     "qty" INTEGER NOT NULL,
     "unit" VARCHAR(150) NOT NULL,
-    "status" BOOLEAN NOT NULL DEFAULT true,
+    "position" VARCHAR(20) NOT NULL,
+    "machineId" VARCHAR(100),
+    "status" VARCHAR(100) NOT NULL,
     "comment" VARCHAR(155),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "Orders_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Prescriptions" (
+    "id" VARCHAR(100) NOT NULL,
+    "hn" VARCHAR(20) NOT NULL,
+    "patientName" VARCHAR(200) NOT NULL,
+    "wardCode" VARCHAR(20),
+    "wardDesc" VARCHAR(200),
+    "priorityCode" VARCHAR(20),
+    "priorityDesc" VARCHAR(200),
+    "status" VARCHAR(100) NOT NULL,
+    "comment" VARCHAR(155),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Prescriptions_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -126,4 +118,4 @@ ALTER TABLE "Orders" ADD CONSTRAINT "Orders_prescriptionId_fkey" FOREIGN KEY ("p
 ALTER TABLE "Orders" ADD CONSTRAINT "Orders_drugId_fkey" FOREIGN KEY ("drugId") REFERENCES "Drugs"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Orders" ADD CONSTRAINT "Orders_machineId_fkey" FOREIGN KEY ("machineId") REFERENCES "Machine"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Orders" ADD CONSTRAINT "Orders_machineId_fkey" FOREIGN KEY ("machineId") REFERENCES "Machine"("id") ON DELETE SET NULL ON UPDATE CASCADE;

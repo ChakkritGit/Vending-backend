@@ -11,7 +11,7 @@ export class DispenseController {
   async dispense (@Param('id') id: string) {
     const response = await this.dispenseService.getPharmacyPres(id)
     const result = await this.dispenseService.createPresAndOrder(response)
-    const que: OrderQueType[] = result.prescription.map((item) => {
+    const que: OrderQueType[] = result.order.map((item) => {
       return { id: item.id, qty: item.qty, position: Number(item.position) }
     })
     await sendToQue(que, 'vdOrder')

@@ -48,7 +48,7 @@ export class DispenseService {
       prescriptionNo: presData.PrescriptionNo,
       hn: presData.HN,
       patientName: presData.PatientName,
-      prescription: order,
+      order: order,
     }
 
     await this.prisma.$transaction([

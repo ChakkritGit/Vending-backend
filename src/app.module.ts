@@ -15,7 +15,6 @@ import { PrescriptionsModule } from './prescriptions/prescriptions.module'
 import { LoggerMiddleware } from './utils/logger.middleware'
 import { OrdersModule } from './orders/orders.module'
 import { DispenseModule } from './dispense/dispense.module'
-import { MorganMiddleware } from './middleware/morgan.middleware'
 
 @Module({
   imports: [
@@ -38,6 +37,5 @@ export class AppModule implements NestModule {
       // { path: 'dispense/:id', method: RequestMethod.GET },
     )
     consumer.apply(LoggerMiddleware).forRoutes('*')
-    consumer.apply(MorganMiddleware).forRoutes('*')
   }
 }

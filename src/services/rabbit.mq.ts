@@ -1,25 +1,27 @@
+import { Logger } from '@nestjs/common'
 import { Channel, Connection, connect } from 'amqplib'
 import { OrderQueType } from 'src/types/global'
 
 let channel: Channel
 let connection: Connection
+let logger = new Logger('SERVICE')
 
 const initRabbitMq = async (): Promise<void> => {
   try {
     connection = await connect(String(process.env.RABBITMQ))
     connection.on('error', err => {
-      console.error('RabbitMQ connection error:', err)
+      logger.error('RabbitMQ connection error:', err)
     })
 
     connection.on('close', () => {
-      console.warn('RabbitMQ connection closed. Retrying...')
+      logger.warn('RabbitMQ connection closed. Retrying...')
       setTimeout(initRabbitMq, 5000)
     })
 
     channel = await connection.createChannel()
-    console.log('RabbitMQ connected and channel created.')
+    logger.log('RabbitMQ connected and channel created.')
   } catch (err) {
-    console.error('Failed to connect to RabbitMQ:', err)
+    logger.error('Failed to connect to RabbitMQ:', err)
     setTimeout(initRabbitMq, 5000)
   }
 }
@@ -42,7 +44,7 @@ const sendToQue = async (
       })
     }
   } catch (error) {
-    console.error('Error in sendToQue:', error)
+    logger.error('Error in sendToQue:', error)
     throw error
   }
 }
@@ -51,7 +53,7 @@ const cancelQueue = async (queue: string): Promise<void> => {
   try {
     await channel.purgeQueue(queue)
   } catch (err) {
-    console.error('Error in cancelQueue:', err)
+    logger.error('Error in cancelQueue:', err)
     throw err
   }
 }

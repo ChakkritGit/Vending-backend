@@ -3,7 +3,6 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
-import * as morgan from 'morgan';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { initRabbitMq } from './services/rabbit.mq';
 
@@ -19,7 +18,6 @@ async function bootstrap() {
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory);
-  app.use(morgan('⚡ [:date[iso]] - :method :url :status | :res[content-length] B - :response-time ms | [:user-agent] - HTTP/:http-version'))
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
   app.useGlobalInterceptors(new ResponseInterceptor(reflector));
   app.useGlobalFilters(new AllExceptionsFilter());

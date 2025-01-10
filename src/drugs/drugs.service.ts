@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common'
 import { UpdateDrugDto } from './dto/update-drug.dto'
 import { PrismaService } from 'src/prisma/prisma.service'
 import * as fs from 'fs/promises'
@@ -8,14 +8,17 @@ import { v4 as uuidv4 } from 'uuid'
 
 @Injectable()
 export class DrugsService {
-  constructor (private prisma: PrismaService) {}
+  logger: Logger
+  constructor (private prisma: PrismaService) {
+    this.logger = new Logger('SERVICE')
+  }
 
   private async deleteFile (filePath: string) {
     try {
       await fs.unlink(`.${filePath}`)
-      console.log(`🗑️  this image: [${filePath}] has been deleted!`)
+      this.logger.log(`🗑️  this image: [${filePath}] has been deleted!`)
     } catch (error) {
-      console.error(`Failed to delete file: [${filePath}]!`)
+      this.logger.error(`Failed to delete file: [${filePath}]!`)
     }
   }
 
@@ -50,8 +53,8 @@ export class DrugsService {
       })
       return result
     } catch (error) {
-      console.log('passed2')
-      console.log(error)
+      this.logger.log('passed2')
+      this.logger.log(error)
       if (picture) await this.deleteFile(picture)
       throw new HttpException(
         'An error occurred while creating the drug!',

@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Users } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
@@ -8,14 +8,17 @@ import * as fs from 'fs/promises';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) { }
+  logger: Logger
+  constructor(private prisma: PrismaService) {
+    this.logger = new Logger('SERVICE')
+  }
 
   private async deleteFile(filePath: string) {
     try {
       await fs.unlink(`.${filePath}`);
-      console.log(`🗑️  this image: [${filePath}] has been deleted!`)
+      this.logger.log(`🗑️  this image: [${filePath}] has been deleted!`)
     } catch (error) {
-      console.error(`Failed to delete file: [${filePath}]!`);
+      this.logger.error(`Failed to delete file: [${filePath}]!`);
     }
   }
 

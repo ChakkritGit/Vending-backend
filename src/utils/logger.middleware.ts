@@ -1,11 +1,13 @@
-import { Injectable, NestMiddleware } from '@nestjs/common';
+import { Injectable, Logger, NestMiddleware } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 import * as fs from 'fs';
 import * as path from 'path';
 
 @Injectable()
 export class LoggerMiddleware implements NestMiddleware {
+  logger: Logger
   use(req: Request, res: Response, next: NextFunction) {
+    this.logger = new Logger('SYSTEM')
     const logFolder = path.join(__dirname, process.env.NODE_ENV === 'development' ? '../..' : '..', 'logs');
     const logFileName = `${new Date().toISOString().split('T')[0]}.log`;
     const logFilePath = path.join(logFolder, logFileName);
@@ -21,7 +23,7 @@ export class LoggerMiddleware implements NestMiddleware {
 
       fs.appendFile(logFilePath, logMessage, (err) => {
         if (err) {
-          console.error('Failed to write to log file:', err);
+          this.logger.error('Failed to write to log file:', err);
         }
       });
     });

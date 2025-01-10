@@ -1,14 +1,26 @@
-import { Channel, connect } from 'amqplib'
+import { Channel, Connection, connect } from 'amqplib'
 import { OrderQueType } from 'src/types/global'
 
 let channel: Channel
+let connection: Connection
 
 const initRabbitMq = async (): Promise<void> => {
   try {
-    const conn = await connect(String(process.env.RABBITMQ))
-    channel = await conn.createChannel()
+    connection = await connect(String(process.env.RABBITMQ))
+    connection.on('error', err => {
+      console.error('RabbitMQ connection error:', err)
+    })
+
+    connection.on('close', () => {
+      console.warn('RabbitMQ connection closed. Retrying...')
+      setTimeout(initRabbitMq, 5000)
+    })
+
+    channel = await connection.createChannel()
+    console.log('RabbitMQ connected and channel created.')
   } catch (err) {
-    throw err
+    console.error('Failed to connect to RabbitMQ:', err)
+    setTimeout(initRabbitMq, 5000)
   }
 }
 
@@ -30,6 +42,7 @@ const sendToQue = async (
       })
     }
   } catch (error) {
+    console.error('Error in sendToQue:', error)
     throw error
   }
 }
@@ -38,6 +51,7 @@ const cancelQueue = async (queue: string): Promise<void> => {
   try {
     await channel.purgeQueue(queue)
   } catch (err) {
+    console.error('Error in cancelQueue:', err)
     throw err
   }
 }

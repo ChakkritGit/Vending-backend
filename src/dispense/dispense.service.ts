@@ -10,6 +10,19 @@ import { v4 as uuidv4 } from 'uuid'
 export class DispenseService {
   constructor (private prisma: PrismaService) {}
 
+  async findPrescription () {
+    try {
+      const result = await this.prisma.prescriptions.findFirst({
+        where: { status: { in: ['0', '1'] } },
+        include: { order: true },
+        orderBy: { createdAt: 'asc' },
+      })
+      return result
+    } catch (error) {
+      throw error
+    }
+  }
+
   async getPharmacyPres (id: string) {
     try {
       const response = await axios.get<ResponsePres>(

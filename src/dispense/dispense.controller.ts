@@ -1,4 +1,4 @@
-import { Controller, Get, Param } from '@nestjs/common'
+import { BadRequestException, Controller, Get, Param } from '@nestjs/common'
 import { DispenseService } from './dispense.service'
 import { sendToQue } from 'src/services/rabbit.mq'
 import { OrderQueType } from 'src/types/global'
@@ -9,6 +9,8 @@ export class DispenseController {
 
   @Get(':id')
   async dispense (@Param('id') id: string) {
+    const readyToDispense = await this.dispenseService.findPrescription()
+    if (!!readyToDispense) throw new BadRequestException('Order already exists!')
     const response = await this.dispenseService.getPharmacyPres(id)
     const result = await this.dispenseService.createPresAndOrder(response)
     const que: OrderQueType[] = result.order.map((item) => {

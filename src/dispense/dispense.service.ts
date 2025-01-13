@@ -3,6 +3,7 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  NotImplementedException,
 } from '@nestjs/common'
 import { Prescription, ResponsePres } from 'src/types/global'
 import { Orders } from '@prisma/client'
@@ -128,6 +129,18 @@ export class DispenseService {
         data: { status: 'complete', updatedAt: getDateFormat(new Date()) },
       })
     }
+
+    return result
+  }
+
+  async getOrder () {
+    const result = await this.prisma.prescriptions.findFirst({
+      where: { status: { equals: 'pending' } },
+      include: { order: true },
+      orderBy: { createdAt: 'desc' },
+    })
+
+    if (!result) return
 
     return result
   }

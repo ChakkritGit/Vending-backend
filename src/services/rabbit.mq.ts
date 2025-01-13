@@ -4,7 +4,7 @@ import { OrderQueType } from 'src/types/global'
 
 let channel: Channel
 let connection: Connection
-let logger = new Logger('SERVICE')
+let logger = new Logger('RabbitMQService')
 
 const initRabbitMq = async (): Promise<void> => {
   try {

@@ -1,4 +1,4 @@
-import { BadRequestException, Controller, Get, Param } from '@nestjs/common'
+import { BadRequestException, Controller, Get, HttpCode, Param } from '@nestjs/common'
 import { DispenseService } from './dispense.service'
 import { sendToQue } from 'src/services/rabbit.mq'
 import { OrderQueType } from 'src/types/global'
@@ -75,6 +75,12 @@ export class DispenseController {
       'error',
       presId,
     )
+    return result
+  }
+
+  @Get('prescription/order')
+  async getOrder () {
+    const result = await this.dispenseService.getOrder()
     return result
   }
 }

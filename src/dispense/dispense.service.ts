@@ -82,7 +82,13 @@ export class DispenseService {
       this.prisma.orders.createMany({ data: order }),
     ])
 
-    return pres
+    const result = await this.prisma.prescriptions.findFirst({
+      where: { status: { equals: 'pending' } },
+      include: { order: true },
+      orderBy: { createdAt: 'desc' },
+    })
+
+    return result
   }
 
   async updateStatusOrder (id: string, status: string, presId: string) {

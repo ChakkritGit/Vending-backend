@@ -9,8 +9,8 @@ let logger = new Logger('SERVICE')
 const initRabbitMq = async (): Promise<void> => {
   try {
     connection = await connect(String(process.env.RABBITMQ))
-    connection.on('error', err => {
-      logger.error('RabbitMQ connection error:', err)
+    connection.on('error', error => {
+      logger.error('RabbitMQ connection error:', error)
     })
 
     connection.on('close', () => {
@@ -20,8 +20,8 @@ const initRabbitMq = async (): Promise<void> => {
 
     channel = await connection.createChannel()
     logger.log('RabbitMQ connected and channel created.')
-  } catch (err) {
-    logger.error('Failed to connect to RabbitMQ:', err)
+  } catch (error) {
+    logger.error('Failed to connect to RabbitMQ:', error)
     setTimeout(initRabbitMq, 5000)
   }
 }

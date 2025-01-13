@@ -1,10 +1,13 @@
 import axios, { AxiosError } from 'axios'
-import { Injectable, NotFoundException } from '@nestjs/common'
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common'
 import { Prescription, ResponsePres } from 'src/types/global'
 import { Orders } from '@prisma/client'
 import { getDateFormat } from 'src/utils/date.format'
 import { PrismaService } from 'src/prisma/prisma.service'
-import { v4 as uuidv4 } from 'uuid'
 
 @Injectable()
 export class DispenseService {
@@ -13,7 +16,7 @@ export class DispenseService {
   async findPrescription () {
     try {
       const result = await this.prisma.prescriptions.findFirst({
-        where: { status: { in: ['0', '1'] } },
+        where: { status: { in: ['ready', 'pending'] } },
         include: { order: true },
         orderBy: { createdAt: 'asc' },
       })
@@ -49,7 +52,7 @@ export class DispenseService {
         qty: Number(item.f_orderqty),
         unit: item.f_orderunitcode,
         position: item.f_binlocation,
-        status: '0',
+        status: 'ready',
         machineId: 'MAC-1e77a4fd-1f2c-4c0c-bcb8-11517839adfa',
         comment: '',
         createdAt: getDateFormat(new Date()),
@@ -70,7 +73,7 @@ export class DispenseService {
           id: presData.PrescriptionNo,
           hn: presData.HN,
           patientName: presData.PatientName,
-          status: '0',
+          status: 'pending',
           createdAt: getDateFormat(new Date()),
           updatedAt: getDateFormat(new Date()),
         },
@@ -81,7 +84,51 @@ export class DispenseService {
     return pres
   }
 
-  async dispense (id: string) {
-    return ''
+  async updateStatusOrder (id: string, status: string, presId: string) {
+    const order = await this.prisma.orders.findUnique({ where: { id } })
+
+    if (!order) throw new NotFoundException('Order not found!')
+
+    const validStatusTransitions = {
+      pending: 'ready',
+      receive: 'pending',
+      complete: 'receive',
+      error: 'pending',
+    }
+
+    if (order.status !== validStatusTransitions[status]) {
+      if (status === 'error' && order.status === 'pending') {
+        throw new BadRequestException('Order is pending not receive!')
+      }
+
+      throw new BadRequestException(
+        `Cannot transition from ${order.status} to ${status}`,
+      )
+    }
+
+    const result = await this.prisma.orders.update({
+      where: { id },
+      data: { status, updatedAt: getDateFormat(new Date()) },
+    })
+
+    if (status === 'error') return result
+
+    const relatedOrders = await this.prisma.orders.findMany({
+      where: { prescriptionId: presId },
+      select: { status: true },
+    })
+
+    const allCompletedOrErrored = relatedOrders.every(
+      o => o.status === 'complete' || o.status === 'error',
+    )
+
+    if (allCompletedOrErrored) {
+      await this.prisma.prescriptions.update({
+        where: { id: presId },
+        data: { status: 'complete', updatedAt: getDateFormat(new Date()) },
+      })
+    }
+
+    return result
   }
 }

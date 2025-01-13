@@ -33,6 +33,7 @@ type PrescriptionList = {
 
 type OrderQueType = {
   id: string,
+  presId: string,
   qty: number,
   position: number
 }

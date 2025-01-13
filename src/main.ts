@@ -22,7 +22,7 @@ async function bootstrap () {
   SwaggerModule.setup('api', app, documentFactory)
   app.use(
     morgan(
-      '⚡ [:method - :status] :url | :res[content-length] B - :response-time ms | [:user-agent] - HTTP/:http-version',
+      '⚡ :method - [:status] :url | :res[content-length] B - :response-time ms',
       {
         stream: {
           write: (message: string) => {

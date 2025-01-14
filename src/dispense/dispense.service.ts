@@ -61,13 +61,6 @@ export class DispenseService {
       }
     })
 
-    const pres = {
-      prescriptionNo: presData.PrescriptionNo,
-      hn: presData.HN,
-      patientName: presData.PatientName,
-      order: order,
-    }
-
     await this.prisma.$transaction([
       this.prisma.prescriptions.create({
         data: {

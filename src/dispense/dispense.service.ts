@@ -27,6 +27,17 @@ export class DispenseService {
     }
   }
 
+  async findPrescriptionFinished (id: string) {
+    try {
+      const result = await this.prisma.prescriptions.findFirst({
+        where: { id, AND: { status: { equals: 'complete' } } },
+      })
+      return result
+    } catch (error) {
+      throw error
+    }
+  }
+
   async getPharmacyPres (id: string) {
     try {
       const response = await axios.get<ResponsePres>(

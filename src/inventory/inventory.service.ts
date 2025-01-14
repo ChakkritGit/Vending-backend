@@ -16,7 +16,7 @@ export class InventoryService {
       where: { position }
     })
 
-    if (inventory) throw new HttpException('This position is already in use!', HttpStatus.BAD_REQUEST);
+    if (inventory) throw new HttpException('ตำแหน่งนี้ถูกใช้ไปแล้ว!', HttpStatus.BAD_REQUEST);
 
     const result = await this.prisma.inventory.create({
       data: {
@@ -48,7 +48,7 @@ export class InventoryService {
       where: { id }
     })
 
-    if (!inventory) throw new HttpException('Inventory not found!', HttpStatus.NOT_FOUND);
+    if (!inventory) throw new HttpException('ไม่พบช่องสินค้า!', HttpStatus.NOT_FOUND);
 
     return inventory;
   }
@@ -59,7 +59,7 @@ export class InventoryService {
       where: { id }
     })
 
-    if (!inventory) throw new HttpException('inventory not found!', HttpStatus.NOT_FOUND);
+    if (!inventory) throw new HttpException('ไม่พบช่องสินค้า!', HttpStatus.NOT_FOUND);
 
     const result = await this.prisma.inventory.update({
       where: {id},
@@ -84,12 +84,12 @@ export class InventoryService {
       where: { id }
     })
 
-    if (!inventory) throw new HttpException('Inventory not found!', HttpStatus.NOT_FOUND);
+    if (!inventory) throw new HttpException('ไม่พบช่องสินค้า!', HttpStatus.NOT_FOUND);
 
     await this.prisma.inventory.delete({
       where: { id }
     })
 
-    return "this inventory has been deleted!";
+    return "ช่องสินค้าถูกลบแล้ว!";
   }
 }

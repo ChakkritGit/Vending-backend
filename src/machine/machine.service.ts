@@ -16,7 +16,7 @@ export class MachineService {
       where: { machineName: { equals: machineName } }
     })
 
-    if (machine) throw new HttpException('This machine name is already in use!', HttpStatus.NOT_FOUND);
+    if (machine) throw new HttpException('ชื่อเครื่องนี้ถูกใช้ไปแล้ว!', HttpStatus.NOT_FOUND);
 
     const result = await this.prisma.machine.create({
       data: {
@@ -45,7 +45,7 @@ export class MachineService {
       where: { id }
     })
 
-    if (!machine) throw new HttpException('Machine not found!', HttpStatus.NOT_FOUND);
+    if (!machine) throw new HttpException('ไม่พบเครื่อง!', HttpStatus.NOT_FOUND);
 
     return machine;
   }
@@ -57,7 +57,7 @@ export class MachineService {
       where: { id },
     });
 
-    if (!machine) throw new HttpException('Machine not found!', HttpStatus.NOT_FOUND);
+    if (!machine) throw new HttpException('ไม่พบเครื่อง!', HttpStatus.NOT_FOUND);
 
     const result = await this.prisma.machine.update({
       where: { id },
@@ -79,11 +79,11 @@ export class MachineService {
       where: { id }
     })
 
-    if (!machine) throw new HttpException('Machine not found!', HttpStatus.NOT_FOUND);
+    if (!machine) throw new HttpException('ไม่พบเครื่อง!', HttpStatus.NOT_FOUND);
 
     await this.prisma.machine.delete({
       where: { id }
     })
-    return "this machine has been deleted!";
+    return "เครื่องถูกลบแล้ว!";
   }
 }

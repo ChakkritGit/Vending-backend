@@ -56,7 +56,7 @@ export class UsersController {
     @Body() createUserDto: Users,
   ) {
     if (!file) {
-      throw new BadRequestException('No file uploaded.')
+      throw new BadRequestException('No file uploaded!')
     }
 
     const imageUrl = `/uploads/users/${file.filename}`

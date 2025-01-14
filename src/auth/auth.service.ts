@@ -19,17 +19,17 @@ export class AuthService {
     })
     if (!user)
       throw new HttpException(
-        'This username is not found!',
+        'ไม่พบชื่อผู้ใช้นี้!',
         HttpStatus.NOT_FOUND,
       )
     if (!user.status)
       throw new HttpException(
-        'This username is deactivated!',
+        'ชื่อผู้ใช้นี้ถูกปิดใช้งานแล้ว!',
         HttpStatus.BAD_REQUEST,
       )
     const isPasswordValid = await bcrypt.compare(password, user.password)
     if (!isPasswordValid)
-      throw new HttpException('Invalid password!', HttpStatus.BAD_REQUEST)
+      throw new HttpException('รหัสผ่านไม่ถูกต้อง!', HttpStatus.BAD_REQUEST)
     const token = this.jwtService.sign({
       id: user.id,
       display: user.display,
@@ -56,11 +56,11 @@ export class AuthService {
     const user = await this.prisma.users.findFirst({
       where: { id },
     })
-    if (!user) throw new HttpException('User not found!', HttpStatus.NOT_FOUND)
+    if (!user) throw new HttpException('ไม่พบผู้ใช้!', HttpStatus.NOT_FOUND)
     const isPasswordValid = await bcrypt.compare(oldPassword, user.password)
     if (!isPasswordValid)
       throw new HttpException(
-        'The old password is incorrect!',
+        'รหัสผ่านเก่าไม่ถูกต้อง!',
         HttpStatus.BAD_REQUEST,
       )
     const hashedPassword = await bcrypt.hash(newPassword, 10)
@@ -70,6 +70,6 @@ export class AuthService {
         password: hashedPassword,
       },
     })
-    return 'Password has been reset success!'
+    return 'รีเซ็ตรหัสผ่านสำเร็จแล้ว!'
   }
 }

@@ -32,7 +32,7 @@ export class DrugsService {
     if (drugExits) {
       if (picture) await this.deleteFile(picture)
       throw new HttpException(
-        'This drug name is already in use!',
+        'ชื่อยานี้ถูกใช้ไปแล้ว!',
         HttpStatus.BAD_REQUEST,
       )
     }
@@ -57,7 +57,7 @@ export class DrugsService {
       this.logger.log(error)
       if (picture) await this.deleteFile(picture)
       throw new HttpException(
-        'An error occurred while creating the drug!',
+        'เกิดข้อผิดพลาดขณะเพิ่มยา!',
         HttpStatus.INTERNAL_SERVER_ERROR,
       )
     }
@@ -74,7 +74,7 @@ export class DrugsService {
     const drug = await this.prisma.drugs.findFirst({
       where: { id },
     })
-    if (!drug) throw new HttpException('Drug not found!', HttpStatus.NOT_FOUND)
+    if (!drug) throw new HttpException('ไม่พบยา!', HttpStatus.NOT_FOUND)
     return drug
   }
 
@@ -86,7 +86,7 @@ export class DrugsService {
 
     if (!drug) {
       await this.deleteFile(updateDrugDto.picture)
-      throw new HttpException('Drug not found!', HttpStatus.NOT_FOUND)
+      throw new HttpException('ไม่พบยา!', HttpStatus.NOT_FOUND)
     }
 
     const result = await this.prisma.drugs.update({
@@ -111,11 +111,11 @@ export class DrugsService {
     const drug = await this.prisma.drugs.findFirst({
       where: { id },
     })
-    if (!drug) throw new HttpException('Drug not found!', HttpStatus.NOT_FOUND)
+    if (!drug) throw new HttpException('ไม่พบยา!', HttpStatus.NOT_FOUND)
     const result = await this.prisma.drugs.delete({
       where: { drugCode: id },
     })
     await this.deleteFile(result.picture)
-    return 'this drug has been deleted!'
+    return 'ยาถูกลบแล้ว!'
   }
 }

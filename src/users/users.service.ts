@@ -33,7 +33,7 @@ export class UsersService {
     if (userExits) {
       if (picture) await this.deleteFile(picture)
       throw new HttpException(
-        'This username is already in use!',
+        'ชื่อผู้ใช้นี้ถูกใช้ไปแล้ว!',
         HttpStatus.BAD_REQUEST,
       )
     }
@@ -71,7 +71,7 @@ export class UsersService {
       if (picture) await this.deleteFile(picture)
 
       throw new HttpException(
-        'An error occurred while creating the user!',
+        'เกิดข้อผิดพลาดขณะเพิ่มผู้ใช้!',
         HttpStatus.INTERNAL_SERVER_ERROR,
       )
     }
@@ -110,7 +110,7 @@ export class UsersService {
       where: { id: id },
     })
 
-    if (!user) throw new HttpException('User not found!', HttpStatus.NOT_FOUND)
+    if (!user) throw new HttpException('ไม่พบผู้ใช้!', HttpStatus.NOT_FOUND)
 
     return user
   }
@@ -123,7 +123,7 @@ export class UsersService {
 
     if (!user) {
       await this.deleteFile(updateUserDto.picture)
-      throw new HttpException('User not found!', HttpStatus.NOT_FOUND)
+      throw new HttpException('ไม่พบผู้ใช้!', HttpStatus.NOT_FOUND)
     }
     const result = await this.prisma.users.update({
       select: {
@@ -159,11 +159,11 @@ export class UsersService {
       where: { id: id },
     })
 
-    if (!user) throw new HttpException('User not found!', HttpStatus.NOT_FOUND)
+    if (!user) throw new HttpException('ไม่พบผู้ใช้!', HttpStatus.NOT_FOUND)
     const result = await this.prisma.users.delete({
       where: { id },
     })
     await this.deleteFile(result.picture)
-    return 'this user has been deleted!'
+    return 'ผู้ใช้ถูกลบไปแล้ว!'
   }
 }

@@ -26,7 +26,7 @@ export class PrescriptionsService {
 
     if (!prescription)
       throw new HttpException(
-        'this prescription is not found!',
+        'ไม่พบใบสั่งยานี้!',
         HttpStatus.NOT_FOUND,
       )
 
@@ -44,13 +44,13 @@ export class PrescriptionsService {
 
     if (!prescription)
       throw new HttpException(
-        'this prescription is not found!',
+        'ไม่พบใบสั่งยานี้!',
         HttpStatus.NOT_FOUND,
       )
 
     await this.prisma.prescriptions.delete({
       where: { id },
     })
-    return 'this prescription has been deleted!'
+    return 'ใบสั่งยาถูกลบแล้ว'
   }
 }

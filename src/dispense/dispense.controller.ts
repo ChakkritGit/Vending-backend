@@ -16,10 +16,10 @@ export class DispenseController {
   @Get(':id')
   async dispense (@Param('id') id: string) {
     const finished = await this.dispenseService.findPrescriptionFinished(id)
-    if (finished) throw new BadRequestException('Order dispensed!')
+    if (finished) throw new BadRequestException('รายการนี้ถูกจัดแล้ว!')
     const readyToDispense = await this.dispenseService.findPrescription()
     if (!!readyToDispense)
-      throw new BadRequestException('Order already exists!')
+      throw new BadRequestException('รายการนี้กำลังถูกจัดอยู่!')
     const response = await this.dispenseService.getPharmacyPres(id)
     const result = await this.dispenseService.createPresAndOrder(response)
     const que: OrderQueType[] = result.order

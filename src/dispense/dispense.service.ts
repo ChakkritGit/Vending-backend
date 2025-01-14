@@ -47,7 +47,7 @@ export class DispenseService {
     } catch (error) {
       if (error instanceof AxiosError) {
         if (error.response?.status === 404) {
-          throw new NotFoundException('Prescription not found!')
+          throw new NotFoundException('ไม่พบใบสั่งยา!')
         } else if (error.response?.status === 502) {
           throw new NotFoundException(
             'Unable to connect to the service server!',
@@ -112,7 +112,7 @@ export class DispenseService {
   async updateStatusOrder (id: string, status: string, presId: string) {
     const order = await this.prisma.orders.findUnique({ where: { id } })
 
-    if (!order) throw new NotFoundException('Order not found!')
+    if (!order) throw new NotFoundException('ไม่พบรายการ!')
 
     const validStatusTransitions = {
       pending: 'ready',
@@ -123,7 +123,7 @@ export class DispenseService {
 
     if (order.status !== validStatusTransitions[status]) {
       if (status === 'error' && order.status === 'pending') {
-        throw new BadRequestException('Order is pending not receive!')
+        throw new BadRequestException('รายการอยู่ระหว่างดำเนินการและยังไม่ได้อยู่ในสถานะรับ!')
       }
 
       throw new BadRequestException(

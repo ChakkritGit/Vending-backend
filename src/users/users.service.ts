@@ -1,41 +1,45 @@
-import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { Users } from '@prisma/client';
-import { v4 as uuidv4 } from 'uuid';
-import { getDateFormat } from 'src/utils/date.format';
-import * as bcrypt from 'bcrypt';
-import * as fs from 'fs/promises';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common'
+import { PrismaService } from '../prisma/prisma.service'
+import { Users } from '@prisma/client'
+import { v4 as uuidv4 } from 'uuid'
+import { getDateFormat } from 'src/utils/date.format'
+import * as bcrypt from 'bcrypt'
+import * as fs from 'fs/promises'
 
 @Injectable()
 export class UsersService {
   logger: Logger
-  constructor(private prisma: PrismaService) {
+  constructor (private prisma: PrismaService) {
     this.logger = new Logger('SERVICE')
   }
 
-  private async deleteFile(filePath: string) {
+  private async deleteFile (filePath: string) {
     try {
-      await fs.unlink(`.${filePath}`);
+      await fs.unlink(`.${filePath}`)
       this.logger.log(`🗑️  this image: [${filePath}] has been deleted!`)
     } catch (error) {
-      this.logger.error(`Failed to delete file: [${filePath}]!`);
+      this.logger.error(`Failed to delete file: [${filePath}]!`)
     }
   }
 
-  async create(createUserDto: Users) {
-    const { username, password, display, picture, role, comment } = createUserDto;
+  async create (createUserDto: Users) {
+    const { username, password, display, picture, role, comment } =
+      createUserDto
 
     const userExits = await this.prisma.users.findUnique({
       where: { username: username },
-    });
+    })
 
     if (userExits) {
-      if (picture) await this.deleteFile(picture);
-      throw new HttpException('This username is already in use!', HttpStatus.BAD_REQUEST);
+      if (picture) await this.deleteFile(picture)
+      throw new HttpException(
+        'This username is already in use!',
+        HttpStatus.BAD_REQUEST,
+      )
     }
 
     try {
-      const hashedPassword = await bcrypt.hash(password, 10);
+      const hashedPassword = await bcrypt.hash(password, 10)
 
       const result = await this.prisma.users.create({
         select: {
@@ -51,7 +55,7 @@ export class UsersService {
         },
         data: {
           id: `UID-${uuidv4()}`,
-          username: username.toLocaleLowerCase(),
+          username: username.toLowerCase(),
           password: hashedPassword,
           display: display,
           picture: picture,
@@ -60,20 +64,20 @@ export class UsersService {
           createdAt: getDateFormat(new Date()),
           updatedAt: getDateFormat(new Date()),
         },
-      });
+      })
 
-      return result;
+      return result
     } catch (error) {
-      if (picture) await this.deleteFile(picture);
+      if (picture) await this.deleteFile(picture)
 
       throw new HttpException(
         'An error occurred while creating the user!',
         HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      )
     }
   }
 
-  findAll() {
+  findAll () {
     return this.prisma.users.findMany({
       select: {
         id: true,
@@ -84,13 +88,13 @@ export class UsersService {
         status: true,
         comment: true,
         createdAt: true,
-        updatedAt: true
+        updatedAt: true,
       },
-      orderBy: { createdAt: 'desc' }
-    });
+      orderBy: { createdAt: 'desc' },
+    })
   }
 
-  async findOne(id: string) {
+  async findOne (id: string) {
     const user = await this.prisma.users.findUnique({
       select: {
         id: true,
@@ -101,25 +105,25 @@ export class UsersService {
         status: true,
         comment: true,
         createdAt: true,
-        updatedAt: true
+        updatedAt: true,
       },
       where: { id: id },
-    });
+    })
 
-    if (!user) throw new HttpException('User not found!', HttpStatus.NOT_FOUND);
+    if (!user) throw new HttpException('User not found!', HttpStatus.NOT_FOUND)
 
-    return user;
-  };
+    return user
+  }
 
-  async update(id: string, updateUserDto: Users) {
+  async update (id: string, updateUserDto: Users) {
     const { username, display, picture, role, comment, status } = updateUserDto
     const user = await this.prisma.users.findUnique({
       where: { id },
-    });
+    })
 
     if (!user) {
-      await this.deleteFile(updateUserDto.picture);
-      throw new HttpException('User not found!', HttpStatus.NOT_FOUND);
+      await this.deleteFile(updateUserDto.picture)
+      throw new HttpException('User not found!', HttpStatus.NOT_FOUND)
     }
     const result = await this.prisma.users.update({
       select: {
@@ -131,35 +135,35 @@ export class UsersService {
         status: true,
         comment: true,
         createdAt: true,
-        updatedAt: true
+        updatedAt: true,
       },
       where: { id },
       data: {
-        username: username.toLocaleLowerCase(),
+        username: username?.toLowerCase(),
         display: display,
         picture: picture,
         role: role,
-        status: String(status) === "0" ? false : true,
+        status: String(status) === '0' ? false : true,
         comment: comment,
         updatedAt: getDateFormat(new Date()),
-      }
+      },
     })
 
-    await this.deleteFile(result.picture);
+    await this.deleteFile(result.picture)
 
-    return result;
+    return result
   }
 
-  async remove(id: string) {
+  async remove (id: string) {
     const user = await this.prisma.users.findUnique({
       where: { id: id },
-    });
-
-    if (!user) throw new HttpException('User not found!', HttpStatus.NOT_FOUND);
-    const result = await this.prisma.users.delete({
-      where: { id }
     })
-    await this.deleteFile(result.picture);
-    return "this user has been deleted!";
+
+    if (!user) throw new HttpException('User not found!', HttpStatus.NOT_FOUND)
+    const result = await this.prisma.users.delete({
+      where: { id },
+    })
+    await this.deleteFile(result.picture)
+    return 'this user has been deleted!'
   }
 }

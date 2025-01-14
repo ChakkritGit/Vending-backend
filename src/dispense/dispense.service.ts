@@ -47,7 +47,11 @@ export class DispenseService {
     } catch (error) {
       if (error instanceof AxiosError) {
         if (error.response?.status === 404) {
-          throw new NotFoundException('Data not found')
+          throw new NotFoundException('Prescription not found!')
+        } else if (error.response?.status === 502) {
+          throw new NotFoundException(
+            'Unable to connect to the service server!',
+          )
         }
       }
       throw error
@@ -61,16 +65,18 @@ export class DispenseService {
         prescriptionId: item.f_prescriptionno,
         drugId: item.f_orderitemcode,
         drugName: item.f_orderitemname,
-        qty: Number(item.f_orderqty),
+        qty: parseInt(item.f_orderqty),
         unit: item.f_orderunitcode,
-        position: item.f_binlocation,
+        position: parseInt(item.f_binlocation),
         status: 'ready',
         machineId: 'MAC-1e77a4fd-1f2c-4c0c-bcb8-11517839adfa',
         comment: '',
         createdAt: getDateFormat(new Date()),
         updatedAt: getDateFormat(new Date()),
       }
-    })
+    }).sort((a, b) => a.position - b.position)
+
+    // console.log(order)
 
     await this.prisma.$transaction([
       this.prisma.prescriptions.create({
@@ -88,8 +94,16 @@ export class DispenseService {
 
     const result = await this.prisma.prescriptions.findFirst({
       where: { status: { equals: 'pending' } },
-      include: { order: true },
-      orderBy: { createdAt: 'desc' },
+      include: {
+        order: {
+          orderBy: {
+            position: 'asc',
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
     })
 
     return result
@@ -146,8 +160,16 @@ export class DispenseService {
   async getOrder () {
     const result = await this.prisma.prescriptions.findFirst({
       where: { status: { equals: 'pending' } },
-      include: { order: true },
-      orderBy: { createdAt: 'desc' },
+      include: {
+        order: {
+          orderBy: {
+            position: 'asc',
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
     })
 
     if (!result) return

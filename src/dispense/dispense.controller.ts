@@ -1,4 +1,10 @@
-import { BadRequestException, Controller, Get, HttpCode, Param } from '@nestjs/common'
+import {
+  BadRequestException,
+  Controller,
+  Get,
+  HttpCode,
+  Param,
+} from '@nestjs/common'
 import { DispenseService } from './dispense.service'
 import { sendToQue } from 'src/services/rabbit.mq'
 import { OrderQueType } from 'src/types/global'
@@ -16,14 +22,16 @@ export class DispenseController {
       throw new BadRequestException('Order already exists!')
     const response = await this.dispenseService.getPharmacyPres(id)
     const result = await this.dispenseService.createPresAndOrder(response)
-    const que: OrderQueType[] = result.order.map(item => {
-      return {
-        id: item.id,
-        presId: item.prescriptionId,
-        qty: item.qty,
-        position: Number(item.position),
-      }
-    })
+    const que: OrderQueType[] = result.order
+      .map(item => {
+        return {
+          id: item.id,
+          presId: item.prescriptionId,
+          qty: item.qty,
+          position: item.position,
+        }
+      })
+      .sort((a, b) => a.position - b.position)
     await sendToQue(que, 'vdOrder')
     return result
   }

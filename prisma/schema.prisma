@@ -77,7 +77,7 @@ model Orders {
   drugName       String        @db.VarChar(150)
   qty            Int           @db.Integer
   unit           String        @db.VarChar(150)
-  position       String        @db.VarChar(20)
+  position       Int           @db.Integer
   machineId      String?       @db.VarChar(100)
   prescription   Prescriptions @relation(fields: [prescriptionId], references: [id])
   drug           Drugs         @relation(fields: [drugId], references: [drugCode])

@@ -123,7 +123,9 @@ export class DispenseService {
 
     if (order.status !== validStatusTransitions[status]) {
       if (status === 'error' && order.status === 'pending') {
-        throw new BadRequestException('รายการอยู่ระหว่างดำเนินการและยังไม่ได้อยู่ในสถานะรับ!')
+        throw new BadRequestException(
+          'รายการอยู่ระหว่างดำเนินการและยังไม่ได้อยู่ในสถานะรับ!',
+        )
       }
 
       throw new BadRequestException(
@@ -175,5 +177,13 @@ export class DispenseService {
     if (!result) return
 
     return result
+  }
+
+  async clearPresOrder () {
+    await this.prisma.$transaction([
+      this.prisma.orders.deleteMany(),
+      this.prisma.prescriptions.deleteMany(),
+    ])
+    return 'Successfully'
   }
 }

@@ -93,4 +93,10 @@ export class DispenseController {
     const result = await this.dispenseService.getOrder()
     return result
   }
+
+  @Get('prescription/order/clear')
+  async clearPresOrder () {
+    const result = await this.dispenseService.clearPresOrder()
+    return result
+  }
 }

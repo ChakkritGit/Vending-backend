@@ -120,6 +120,7 @@ export class DispenseService {
       receive: 'pending',
       complete: 'receive',
       error: 'pending',
+      ready: 'pending',
     }
 
     if (order.status !== validStatusTransitions[status]) {

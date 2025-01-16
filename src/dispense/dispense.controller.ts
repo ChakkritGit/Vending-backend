@@ -88,6 +88,19 @@ export class DispenseController {
     return result
   }
 
+  @Get('order/status/ready/:id/:presId')
+  async updateOrderReadyStatus (
+    @Param('id') id: string,
+    @Param('presId') presId: string,
+  ) {
+    const result = await this.dispenseService.updateStatusOrder(
+      id,
+      'ready',
+      presId,
+    )
+    return result
+  }
+
   @Get('prescription/order')
   async getOrder () {
     const result = await this.dispenseService.getOrder()

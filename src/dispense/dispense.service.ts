@@ -131,7 +131,7 @@ export class DispenseService {
       }
 
       throw new BadRequestException(
-        `Cannot transition from ${order.status} to ${status}`,
+        `ไม่สามารถเปลี่ยนสถานะจาก ${order.status} ไปเป็น ${status} ได้`,
       )
     }
 

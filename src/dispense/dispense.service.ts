@@ -135,12 +135,12 @@ export class DispenseService {
       )
     }
 
-    const result = await this.prisma.orders.update({
+    await this.prisma.orders.update({
       where: { id },
       data: { status, updatedAt: getDateFormat(new Date()) },
     })
 
-    if (status === 'error') return result
+    if (status === 'error') return
 
     const relatedOrders = await this.prisma.orders.findMany({
       where: { prescriptionId: presId },
@@ -157,6 +157,14 @@ export class DispenseService {
         data: { status: 'complete', updatedAt: getDateFormat(new Date()) },
       })
     }
+
+    const result = await this.prisma.prescriptions.findFirst({
+      where: {
+        id: presId,
+        AND: { order: { every: { status: { contains: 'complete' } } } },
+      },
+      include: { order: true },
+    })
 
     return result
   }

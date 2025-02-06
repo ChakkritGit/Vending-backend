@@ -60,54 +60,67 @@ export class DispenseService {
   }
 
   async createPresAndOrder (presData: Prescription) {
-    const order: Orders[] = presData.Prescription.map(item => {
-      return {
-        id: `ORD-${item.RowID}`,
-        prescriptionId: item.f_prescriptionno,
-        drugId: item.f_orderitemcode,
-        drugName: item.f_orderitemname,
-        qty: parseInt(item.f_orderqty),
-        unit: item.f_orderunitcode,
-        position: parseInt(item.f_binlocation),
-        status: 'ready',
-        machineId: 'MAC-1e77a4fd-1f2c-4c0c-bcb8-11517839adfa',
-        comment: '',
-        createdAt: getDateFormat(new Date()),
-        updatedAt: getDateFormat(new Date()),
-      }
-    }).sort((a, b) => a.position - b.position)
+    try {
+      const drugs = await this.prisma.drugs.findMany()
 
-    // console.log(order)
+      const order: Orders[] = presData.Prescription.map(item => {
+        const matchedDrug = drugs.find(
+          drug => drug.drugCode === item.f_orderitemcode,
+        )
 
-    await this.prisma.$transaction([
-      this.prisma.prescriptions.create({
-        data: {
-          id: presData.PrescriptionNo,
-          hn: presData.HN,
-          patientName: presData.PatientName,
-          status: 'pending',
-          createdAt: getDateFormat(new Date()),
-          updatedAt: getDateFormat(new Date()),
-        },
-      }),
-      this.prisma.orders.createMany({ data: order }),
-    ])
+        if (!matchedDrug) {
+          throw new Error(`Drug with code ${item.f_orderitemcode} not found.`)
+        }
 
-    const result = await this.prisma.prescriptions.findFirst({
-      where: { status: { equals: 'pending' } },
-      include: {
-        order: {
-          orderBy: {
-            position: 'asc',
+        return {
+          id: `ORD-${item.RowID}`,
+          prescriptionId: item.f_prescriptionno,
+          drugId: item.f_orderitemcode,
+          drugName: matchedDrug.drugName,
+          qty: parseInt(item.f_orderqty),
+          unit: matchedDrug.unit,
+          drugLot: matchedDrug.drugLot,
+          drugExpire: matchedDrug.drugExpire,
+          drugPriority: matchedDrug.drugPriority,
+          position: parseInt(item.f_binlocation),
+          status: 'ready',
+          machineId: 'MAC-241ab4ad-201f-40fd-aa88-aec1512ae15c',
+          comment: '',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }
+      }).sort((a, b) => a.position - b.position)
+
+      const result = await this.prisma.$transaction(async tx => {
+        await tx.prescriptions.create({
+          data: {
+            id: presData.PrescriptionNo,
+            hn: presData.HN,
+            patientName: presData.PatientName,
+            status: 'pending',
+            createdAt: new Date(),
+            updatedAt: new Date(),
           },
-        },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    })
+        })
 
-    return result
+        await tx.orders.createMany({ data: order })
+
+        return tx.prescriptions.findFirst({
+          where: { status: { equals: 'pending' } },
+          include: {
+            order: {
+              orderBy: { position: 'asc' },
+            },
+          },
+          orderBy: { createdAt: 'desc' },
+        })
+      })
+
+      return result
+    } catch (error) {
+      console.error('Error creating prescription and order:', error)
+      throw new Error('Failed to create prescription and orders.')
+    }
   }
 
   async updateStatusOrder (id: string, status: string, presId: string) {

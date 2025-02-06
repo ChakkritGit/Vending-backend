@@ -17,6 +17,11 @@ export class InventoryController {
     return this.inventoryService.findAll();
   }
 
+  @Get('exist')
+  getExistDrug () {
+    return this.inventoryService.getExistInventory()
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.inventoryService.findOne(id);

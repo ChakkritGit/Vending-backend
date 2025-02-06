@@ -55,12 +55,10 @@ export class UsersController {
     @UploadedFile() file: Express.Multer.File,
     @Body() createUserDto: Users,
   ) {
-    if (!file) {
-      throw new BadRequestException('No file uploaded!')
+    if (file) {
+      const imageUrl = `/uploads/users/${file.filename}`
+      createUserDto.picture = imageUrl
     }
-
-    const imageUrl = `/uploads/users/${file.filename}`
-    createUserDto.picture = imageUrl
 
     return this.usersService.create(createUserDto)
   }
@@ -109,9 +107,10 @@ export class UsersController {
     @Param('id') id: string,
     @Body() updateUserDto: Users,
   ) {
-    const imageUrl = `/uploads/users/${file.filename}`
-
-    updateUserDto.picture = imageUrl
+    if (file) {
+      const imageUrl = `/uploads/users/${file.filename}`
+      updateUserDto.picture = imageUrl
+    }
 
     return this.usersService.update(id, updateUserDto)
   }

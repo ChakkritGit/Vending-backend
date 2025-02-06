@@ -5,6 +5,7 @@ import * as fs from 'fs/promises'
 import { Drugs } from '@prisma/client'
 import { getDateFormat } from 'src/utils/date.format'
 import { v4 as uuidv4 } from 'uuid'
+import { parse } from 'date-fns'
 
 @Injectable()
 export class DrugsService {
@@ -23,27 +24,49 @@ export class DrugsService {
   }
 
   async create (createDrugDto: Drugs) {
-    const { drugCode, drugName, picture, unit, weight, comment } = createDrugDto
+    const {
+      drugCode,
+      drugName,
+      picture,
+      unit,
+      drugLot,
+      drugExpire,
+      drugPriority,
+      weight,
+      comment,
+    } = createDrugDto
 
     const drugExits = await this.prisma.drugs.findFirst({
-      where: { drugName: { equals: drugName } },
+      where: {
+        OR: [
+          { drugName: { equals: drugName } },
+          { drugCode: { equals: drugCode } },
+        ],
+      },
     })
 
     if (drugExits) {
       if (picture) await this.deleteFile(picture)
-      throw new HttpException(
-        'ชื่อยานี้ถูกใช้ไปแล้ว!',
-        HttpStatus.BAD_REQUEST,
-      )
+      throw new HttpException('ยานี้มีอยู่แล้ว!', HttpStatus.BAD_REQUEST)
     }
 
     try {
+      const formattedDrugLot = parse(String(drugLot), 'dd/MM/yyyy', new Date())
+      const formattedDrugExpire = parse(
+        String(drugExpire),
+        'dd/MM/yyyy',
+        new Date(),
+      )
+
       const result = await this.prisma.drugs.create({
         data: {
           id: `DRUG-${uuidv4()}`,
           drugCode,
           drugName,
           unit,
+          drugLot: formattedDrugLot,
+          drugExpire: formattedDrugExpire,
+          drugPriority: Number(drugPriority),
           weight: Number(weight),
           picture,
           comment,
@@ -53,7 +76,6 @@ export class DrugsService {
       })
       return result
     } catch (error) {
-      this.logger.log('passed2')
       this.logger.log(error)
       if (picture) await this.deleteFile(picture)
       throw new HttpException(
@@ -70,6 +92,13 @@ export class DrugsService {
     return result
   }
 
+  async getExistDrug () {
+    const result = await this.prisma.group.findMany({
+      select: { drugId: true },
+    })
+    return result
+  }
+
   async findOne (id: string) {
     const drug = await this.prisma.drugs.findFirst({
       where: { id },
@@ -79,7 +108,17 @@ export class DrugsService {
   }
 
   async update (id: string, updateDrugDto: Drugs) {
-    const { drugName, status, unit, weight, picture, comment } = updateDrugDto
+    const {
+      drugName,
+      status,
+      unit,
+      drugLot,
+      drugExpire,
+      drugPriority,
+      weight,
+      picture,
+      comment,
+    } = updateDrugDto
     const drug = await this.prisma.drugs.findUnique({
       where: { drugCode: id },
     })
@@ -89,27 +128,50 @@ export class DrugsService {
       throw new HttpException('ไม่พบยา!', HttpStatus.NOT_FOUND)
     }
 
-    const result = await this.prisma.drugs.update({
-      where: { drugCode: id },
-      data: {
-        drugName,
-        unit,
-        picture: picture,
-        weight: Number(weight),
-        status: String(status) === '0' ? false : true,
-        comment: comment,
-        updatedAt: getDateFormat(new Date()),
-      },
-    })
+    if (picture) {
+      updateDrugDto.picture = picture
+      await this.deleteFile(drug.picture)
+    }
 
-    await this.deleteFile(drug.picture)
+    try {
+      const formattedDrugLot = parse(String(drugLot), 'dd/MM/yyyy', new Date())
+      const formattedDrugExpire = parse(
+        String(drugExpire),
+        'dd/MM/yyyy',
+        new Date(),
+      )
 
-    return result
+      const result = await this.prisma.drugs.update({
+        where: { drugCode: id },
+        data: {
+          drugName,
+          unit,
+          drugLot: formattedDrugLot,
+          drugExpire: formattedDrugExpire,
+          drugPriority: Number(drugPriority),
+          picture: picture,
+          weight: Number(weight),
+          status: String(status) === '0' ? false : true,
+          comment: comment,
+          updatedAt: getDateFormat(new Date()),
+        },
+      })
+
+      await this.deleteFile(drug.picture)
+
+      return result
+    } catch (error) {
+      if (picture) await this.deleteFile(picture)
+      throw new HttpException(
+        'เกิดข้อผิดพลาดขณะแก้ไขยา!',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      )
+    }
   }
 
   async remove (id: string) {
     const drug = await this.prisma.drugs.findFirst({
-      where: { id },
+      where: { drugCode: id },
     })
     if (!drug) throw new HttpException('ไม่พบยา!', HttpStatus.NOT_FOUND)
     const result = await this.prisma.drugs.delete({

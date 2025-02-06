@@ -117,41 +117,55 @@ export class UsersService {
 
   async update (id: string, updateUserDto: Users) {
     const { username, display, picture, role, comment, status } = updateUserDto
+
     const user = await this.prisma.users.findUnique({
       where: { id },
     })
 
     if (!user) {
-      await this.deleteFile(updateUserDto.picture)
+      if (picture) await this.deleteFile(picture)
       throw new HttpException('ไม่พบผู้ใช้!', HttpStatus.NOT_FOUND)
     }
-    const result = await this.prisma.users.update({
-      select: {
-        id: true,
-        username: true,
-        display: true,
-        picture: true,
-        role: true,
-        status: true,
-        comment: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-      where: { id },
-      data: {
-        username: username?.toLowerCase(),
-        display: display,
-        picture: picture,
-        role: role,
-        status: String(status) === '0' ? false : true,
-        comment: comment,
-        updatedAt: getDateFormat(new Date()),
-      },
-    })
 
-    await this.deleteFile(result.picture)
+    const dataToUpdate: any = {
+      username: username?.toLowerCase(),
+      display,
+      role,
+      status: String(status) === '0' ? false : true,
+      comment,
+      updatedAt: getDateFormat(new Date()),
+    }
 
-    return result
+    if (picture) {
+      dataToUpdate.picture = picture
+      await this.deleteFile(user.picture)
+    }
+
+    try {
+      const result = await this.prisma.users.update({
+        select: {
+          id: true,
+          username: true,
+          display: true,
+          picture: true,
+          role: true,
+          status: true,
+          comment: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+        where: { id },
+        data: dataToUpdate,
+      })
+
+      return result
+    } catch (error) {
+      if (picture) await this.deleteFile(picture)
+      throw new HttpException(
+        'เกิดข้อผิดพลาดขณะแก้ไขผู้ใช้!',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      )
+    }
   }
 
   async remove (id: string) {
@@ -160,10 +174,18 @@ export class UsersService {
     })
 
     if (!user) throw new HttpException('ไม่พบผู้ใช้!', HttpStatus.NOT_FOUND)
-    const result = await this.prisma.users.delete({
-      where: { id },
-    })
-    await this.deleteFile(result.picture)
-    return 'ผู้ใช้ถูกลบไปแล้ว!'
+
+    try {
+      const result = await this.prisma.users.delete({
+        where: { id },
+      })
+      await this.deleteFile(result.picture)
+      return 'ผู้ใช้ถูกลบไปแล้ว!'
+    } catch (error) {
+      throw new HttpException(
+        'เกิดข้อผิดพลาดขณะลบผู้ใช้!',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      )
+    }
   }
 }

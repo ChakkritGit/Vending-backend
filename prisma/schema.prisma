@@ -27,34 +27,60 @@ model Users {
 }
 
 model Drugs {
-  id        String     @db.VarChar(100)
-  drugCode  String     @id @db.VarChar(100)
-  drugName  String     @db.VarChar(200)
-  unit      String     @db.VarChar(155)
-  weight    Int        @db.Integer
-  status    Boolean    @default(true)
-  picture   String?    @db.VarChar(255)
-  Inventory Inventory?
-  Orders    Orders[]
-  comment   String?    @db.VarChar(155)
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @default(now()) @updatedAt
+  id           String   @db.VarChar(100) @unique
+  drugCode     String   @id @db.VarChar(100)
+  drugName     String   @db.VarChar(200)
+  unit         String   @db.VarChar(155)
+  drugLot      DateTime
+  drugExpire   DateTime
+  drugPriority Int      @default(1) @db.Integer
+  weight       Int?     @default(0) @db.Integer
+  status       Boolean  @default(true)
+  picture      String?  @db.VarChar(255)
+  Orders       Orders[]
+  comment      String?  @db.VarChar(155)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now()) @updatedAt
+  Group        Group[]
 }
 
 model Inventory {
-  id        String   @id @db.VarChar(100)
-  position  Int      @db.Integer
-  qty       Int      @db.Integer
-  min       Int      @db.Integer
-  max       Int      @db.Integer
-  status    Boolean  @default(true)
-  drugId    String   @unique @db.VarChar(100)
-  machineId String   @db.VarChar(100)
-  drug      Drugs    @relation(fields: [drugId], references: [drugCode])
-  machine   Machine  @relation(fields: [machineId], references: [id])
-  comment   String?  @db.VarChar(155)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
+  id             String           @id @db.VarChar(100)
+  position       Int              @db.Integer
+  qty            Int              @db.Integer
+  min            Int              @db.Integer
+  max            Int              @db.Integer
+  status         Boolean          @default(true)
+  machineId      String           @db.VarChar(100)
+  machine        Machine          @relation(fields: [machineId], references: [id])
+  comment        String?          @db.VarChar(155)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @default(now()) @updatedAt
+  Group          Group[]
+  GroupInventory GroupInventory[]
+}
+
+model Group {
+  id          String           @id @db.VarChar(100)
+  drugId      String           @db.VarChar(100)
+  inventoryId String           @db.VarChar(100)
+  groupStatus Int              @db.Integer
+  comment     String?          @db.VarChar(255)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @default(now()) @updatedAt
+  drug        Drugs            @relation(fields: [drugId], references: [id])
+  inventory   Inventory        @relation(fields: [inventoryId], references: [id])
+  groupItems  GroupInventory[]
+}
+
+model GroupInventory {
+  id          String    @id @db.VarChar(100)
+  groupId     String    @db.VarChar(100)
+  inventoryId String    @db.VarChar(100)
+  min         Int       @default(0) @db.Integer
+  max         Int       @default(0) @db.Integer
+  group       Group     @relation(fields: [groupId], references: [id])
+  inventory   Inventory @relation(fields: [inventoryId], references: [id])
 }
 
 model Machine {
@@ -77,6 +103,9 @@ model Orders {
   drugName       String        @db.VarChar(150)
   qty            Int           @db.Integer
   unit           String        @db.VarChar(150)
+  drugLot        DateTime
+  drugExpire     DateTime
+  drugPriority   Int           @default(1) @db.Integer
   position       Int           @db.Integer
   machineId      String?       @db.VarChar(100)
   prescription   Prescriptions @relation(fields: [prescriptionId], references: [id])

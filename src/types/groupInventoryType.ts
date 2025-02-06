@@ -42,4 +42,24 @@ type InventoryListType = {
   inventoryQty: number
 }
 
-export type { GroupType, InventoryType, RawQueryInventoryGroupType, InventoryGroupType }
+type GroupInventoryUpdateType = {
+  drugId: string
+  inventories: {
+    inventoryId: string
+  }[]
+  groupMin: number
+  groupMax: number
+}
+
+type StockUpdateType = {
+  inventoryQty: number
+}
+
+export type {
+  GroupType,
+  InventoryType,
+  RawQueryInventoryGroupType,
+  InventoryGroupType,
+  GroupInventoryUpdateType,
+  StockUpdateType
+}

@@ -8,8 +8,7 @@ import {
   Delete,
 } from '@nestjs/common'
 import { GroupInventoryService } from './group-inventory.service'
-import { UpdateGroupInventoryDto } from './dto/update-group-inventory.dto'
-import { GroupType } from 'src/types/groupInventoryType'
+import { GroupInventoryUpdateType, GroupType, StockUpdateType } from 'src/types/groupInventoryType'
 
 @Controller('group-inventory')
 export class GroupInventoryController {
@@ -25,21 +24,29 @@ export class GroupInventoryController {
     return this.groupInventoryService.findAll()
   }
 
-  @Get(':id')
-  findOne (@Param('id') id: string) {
-    return this.groupInventoryService.findOne(+id)
+  @Get('stock')
+  getStock() {
+    return this.groupInventoryService.getInventoryWithDrug()
   }
 
   @Patch(':id')
   update (
     @Param('id') id: string,
-    @Body() updateGroupInventoryDto: UpdateGroupInventoryDto,
+    @Body() updateGroupInventoryDto: GroupInventoryUpdateType,
   ) {
-    return this.groupInventoryService.update(+id, updateGroupInventoryDto)
+    return this.groupInventoryService.updateGroupAndInventory(id, updateGroupInventoryDto)
+  }
+
+  @Patch('stock/:id')
+  updateStock (
+    @Param('id') id: string,
+    @Body() updateGroupInventoryDto: StockUpdateType,
+  ) {
+    return this.groupInventoryService.updateStock(id, updateGroupInventoryDto)
   }
 
   @Delete(':id')
   remove (@Param('id') id: string) {
-    return this.groupInventoryService.remove(+id)
+    return this.groupInventoryService.deleteGroup(id)
   }
 }

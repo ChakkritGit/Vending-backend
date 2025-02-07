@@ -4,6 +4,8 @@ import { PrismaService } from 'src/prisma/prisma.service'
 import { CreateAuthDto } from './dto/create-auth.dto'
 import { JwtService } from '@nestjs/jwt'
 import * as bcrypt from 'bcrypt'
+import { jwtDecode } from 'jwt-decode'
+import { TokenType } from 'src/types/global'
 
 @Injectable()
 export class AuthService {
@@ -18,10 +20,7 @@ export class AuthService {
       where: { username: username.toLocaleLowerCase() },
     })
     if (!user)
-      throw new HttpException(
-        'ไม่พบชื่อผู้ใช้นี้!',
-        HttpStatus.NOT_FOUND,
-      )
+      throw new HttpException('ไม่พบชื่อผู้ใช้นี้!', HttpStatus.NOT_FOUND)
     if (!user.status)
       throw new HttpException(
         'ชื่อผู้ใช้นี้ถูกปิดใช้งานแล้ว!',
@@ -59,10 +58,7 @@ export class AuthService {
     if (!user) throw new HttpException('ไม่พบผู้ใช้!', HttpStatus.NOT_FOUND)
     const isPasswordValid = await bcrypt.compare(oldPassword, user.password)
     if (!isPasswordValid)
-      throw new HttpException(
-        'รหัสผ่านเก่าไม่ถูกต้อง!',
-        HttpStatus.BAD_REQUEST,
-      )
+      throw new HttpException('รหัสผ่านเก่าไม่ถูกต้อง!', HttpStatus.BAD_REQUEST)
     const hashedPassword = await bcrypt.hash(newPassword, 10)
     await this.prisma.users.update({
       where: { id },
@@ -71,5 +67,46 @@ export class AuthService {
       },
     })
     return 'รีเซ็ตรหัสผ่านสำเร็จแล้ว!'
+  }
+
+  async verifyDrug (
+    body: { username: string; password: string },
+    authHeader: string,
+  ) {
+    if (!authHeader) {
+      throw new HttpException('ไม่พบ Token!', HttpStatus.BAD_REQUEST)
+    }
+
+    const { username, password } = body
+
+    try {
+      const token = authHeader.split(' ')[1]
+      const decoded: TokenType = await jwtDecode(token)
+      const user = await this.prisma.users.findFirst({
+        where: { username: username.toLocaleLowerCase() },
+      })
+      if (!user)
+        throw new HttpException('ไม่พบชื่อผู้ใช้นี้!', HttpStatus.NOT_FOUND)
+      if (!user.status)
+        throw new HttpException(
+          'ชื่อผู้ใช้นี้ถูกปิดใช้งานแล้ว!',
+          HttpStatus.BAD_REQUEST,
+        )
+      const isPasswordValid = await bcrypt.compare(password, user.password)
+      if (!isPasswordValid)
+        throw new HttpException('รหัสผ่านไม่ถูกต้อง!', HttpStatus.BAD_REQUEST)
+
+      if (decoded.role === 'USER' || user.role === 'USER') {
+        throw new HttpException('คุณไม่มีสิทธ์ยืนยัน!', HttpStatus.BAD_REQUEST)
+      }
+
+      if (decoded.id === user.id) {
+        throw new HttpException('คุณไม่มีสิทธ์ยืนยันให้ตัวเอง!', HttpStatus.BAD_REQUEST)
+      }
+
+      return 'OVERRIDDEN'
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR)
+    }
   }
 }

@@ -16,6 +16,7 @@ import { LoggerMiddleware } from './utils/logger.middleware'
 import { OrdersModule } from './orders/orders.module'
 import { DispenseModule } from './dispense/dispense.module'
 import { GroupInventoryModule } from './group-inventory/group-inventory.module';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { GroupInventoryModule } from './group-inventory/group-inventory.module';
     OrdersModule,
     DispenseModule,
     GroupInventoryModule,
+    ReportsModule,
   ],
 })
 export class AppModule implements NestModule {

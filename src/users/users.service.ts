@@ -131,7 +131,7 @@ export class UsersService {
       username: username?.toLowerCase(),
       display,
       role,
-      status: String(status) === '0' ? false : true,
+      status: String(status) === 'true' ? true : false,
       comment,
       updatedAt: getDateFormat(new Date()),
     }

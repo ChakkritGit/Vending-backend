@@ -32,10 +32,23 @@ type PrescriptionList = {
 }
 
 type OrderQueType = {
-  id: string,
-  presId: string,
-  qty: number,
+  id: string
+  presId: string
+  qty: number
   position: number
 }
 
-export type { ResponsePres, Prescription, PrescriptionList, OrderQueType }
+type TokenType = {
+  id: string
+  display: string
+  role: string
+  status: boolean
+}
+
+export type {
+  ResponsePres,
+  Prescription,
+  PrescriptionList,
+  OrderQueType,
+  TokenType,
+}

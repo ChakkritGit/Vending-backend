@@ -155,7 +155,7 @@ export class DrugsService {
         },
       })
 
-      await this.deleteFile(drug.picture)
+      // await this.deleteFile(drug.picture)
 
       return result
     } catch (error) {

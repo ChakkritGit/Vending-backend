@@ -27,11 +27,11 @@ model Users {
 }
 
 model Drugs {
-  id           String   @db.VarChar(100) @unique
+  id           String   @unique @db.VarChar(100)
   drugCode     String   @id @db.VarChar(100)
   drugName     String   @db.VarChar(200)
   unit         String   @db.VarChar(155)
-  drugLot      DateTime
+  drugLot      String   @db.VarChar(155)
   drugExpire   DateTime
   drugPriority Int      @default(1) @db.Integer
   weight       Int?     @default(0) @db.Integer
@@ -103,7 +103,7 @@ model Orders {
   drugName       String        @db.VarChar(150)
   qty            Int           @db.Integer
   unit           String        @db.VarChar(150)
-  drugLot        DateTime
+  drugLot        String        @db.VarChar(155)
   drugExpire     DateTime
   drugPriority   Int           @default(1) @db.Integer
   position       Int           @db.Integer

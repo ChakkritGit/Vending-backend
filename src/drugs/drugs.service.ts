@@ -51,7 +51,6 @@ export class DrugsService {
     }
 
     try {
-      const formattedDrugLot = parse(String(drugLot), 'dd/MM/yyyy', new Date())
       const formattedDrugExpire = parse(
         String(drugExpire),
         'dd/MM/yyyy',
@@ -64,7 +63,7 @@ export class DrugsService {
           drugCode,
           drugName,
           unit,
-          drugLot: formattedDrugLot,
+          drugLot: drugLot,
           drugExpire: formattedDrugExpire,
           drugPriority: Number(drugPriority),
           weight: Number(weight),
@@ -134,7 +133,6 @@ export class DrugsService {
     }
 
     try {
-      const formattedDrugLot = parse(String(drugLot), 'dd/MM/yyyy', new Date())
       const formattedDrugExpire = parse(
         String(drugExpire),
         'dd/MM/yyyy',
@@ -146,7 +144,7 @@ export class DrugsService {
         data: {
           drugName,
           unit,
-          drugLot: formattedDrugLot,
+          drugLot: drugLot,
           drugExpire: formattedDrugExpire,
           drugPriority: Number(drugPriority),
           picture: picture,

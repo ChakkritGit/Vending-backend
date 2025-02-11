@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Orders" ALTER COLUMN "drugLot" SET DATA TYPE VARCHAR(155);

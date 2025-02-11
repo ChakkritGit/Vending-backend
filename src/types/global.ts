@@ -36,6 +36,7 @@ type OrderQueType = {
   presId: string
   qty: number
   position: number
+  priority: number
 }
 
 type TokenType = {

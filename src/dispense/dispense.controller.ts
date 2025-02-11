@@ -29,6 +29,7 @@ export class DispenseController {
           presId: item.prescriptionId,
           qty: item.qty,
           position: item.position,
+          priority: item.drugPriority
         }
       })
       .sort((a, b) => a.position - b.position)

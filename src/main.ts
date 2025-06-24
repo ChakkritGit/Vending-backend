@@ -4,13 +4,16 @@ import { Logger, ValidationPipe } from '@nestjs/common'
 import { ResponseInterceptor } from './common/interceptors/response.interceptor'
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
-import { initRabbitMq } from './services/rabbit.mq'
 import * as morgan from 'morgan'
+import { RabbitMQService } from './services/rabbit.mq'
 
 async function bootstrap () {
   const logger = new Logger('HTTP')
   const app = await NestFactory.create(AppModule)
   const reflector = app.get(Reflector)
+  const rabbit = RabbitMQService.getInstance()
+  const documentFactory = () => SwaggerModule.createDocument(app, config)
+
   app.enableCors({ origin: '*' })
   const config = new DocumentBuilder()
     .setTitle('Vending')
@@ -18,8 +21,9 @@ async function bootstrap () {
     .setVersion('1.0')
     .addTag('Vending')
     .build()
-  const documentFactory = () => SwaggerModule.createDocument(app, config)
+
   SwaggerModule.setup('api', app, documentFactory)
+
   app.use(
     morgan(
       '⚡ :method - [:status] :url | :res[content-length] B - :response-time ms',
@@ -36,8 +40,9 @@ async function bootstrap () {
   app.useGlobalInterceptors(new ResponseInterceptor(reflector))
   app.useGlobalFilters(new AllExceptionsFilter())
   app.setGlobalPrefix('api')
-  await app.listen(process.env.PORT ?? 3000, '0.0.0.0', () => {
-    initRabbitMq()
+
+  await app.listen(process.env.PORT ?? 3000, '0.0.0.0', async () => {
+    await rabbit.init()
   })
 }
 bootstrap()

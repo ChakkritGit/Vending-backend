@@ -1,61 +1,78 @@
 import { Logger } from '@nestjs/common'
-import { Channel, Connection, connect } from 'amqplib'
+import * as amqplib from 'amqplib'
+import { Channel, Connection } from 'amqplib'
 import { OrderQueType } from 'src/types/global'
 
-let channel: Channel
-let connection: Connection
-let logger = new Logger('RabbitMQService')
+export class RabbitMQService {
+  private static instance: RabbitMQService
+  private connection: Connection | null = null
+  private channel: Channel | null = null
+  private readonly logger = new Logger('RabbitMQService')
+  private readonly retryDelay = 5000
 
-const initRabbitMq = async (): Promise<void> => {
-  try {
-    connection = await connect(String(process.env.RABBITMQ))
-    connection.on('error', error => {
-      logger.error('RabbitMQ connection error:', error)
-    })
+  private constructor() {}
 
-    connection.on('close', () => {
-      logger.warn('RabbitMQ connection closed. Retrying...')
-      setTimeout(initRabbitMq, 5000)
-    })
-
-    channel = await connection.createChannel()
-    logger.log('RabbitMQ connected and channel created.')
-  } catch (error) {
-    logger.error('Failed to connect to RabbitMQ:', error)
-    setTimeout(initRabbitMq, 5000)
+  public static getInstance(): RabbitMQService {
+    if (!RabbitMQService.instance) {
+      RabbitMQService.instance = new RabbitMQService()
+    }
+    return RabbitMQService.instance
   }
-}
 
-const sendToQue = async (
-  order: OrderQueType | OrderQueType[],
-  channelName: string,
-) => {
-  try {
-    await channel.assertQueue(channelName, { durable: true })
-    if (Array.isArray(order)) {
-      order.forEach(item => {
-        channel.sendToQueue(channelName, Buffer.from(JSON.stringify(item)), {
+  public async init(): Promise<void> {
+    const url = process.env.RABBITMQ ?? 'amqp://localhost'
+    try {
+      this.logger.log(`🔌 Connecting to RabbitMQ: ${url}`)
+      this.connection = await amqplib.connect(url)
+
+      this.connection.on('error', (error) => {
+        this.logger.error('RabbitMQ connection error:', error)
+      })
+
+      this.connection.on('close', () => {
+        this.logger.warn('RabbitMQ connection closed. Retrying...')
+        setTimeout(() => this.init(), this.retryDelay)
+      })
+
+      this.channel = await this.connection.createChannel()
+      this.logger.log('✅ RabbitMQ connected and channel created.')
+    } catch (error) {
+      this.logger.error('❌ Failed to connect to RabbitMQ:', error)
+      setTimeout(() => this.init(), this.retryDelay)
+    }
+  }
+
+  public async sendToQueue(order: OrderQueType | OrderQueType[], queueName: string): Promise<void> {
+    if (!this.channel) {
+      this.logger.error('❌ Channel is not initialized.')
+      return
+    }
+
+    try {
+      await this.channel.assertQueue(queueName, { durable: true })
+      const orders = Array.isArray(order) ? order : [order]
+      for (const item of orders) {
+        this.channel.sendToQueue(queueName, Buffer.from(JSON.stringify(item)), {
           persistent: true,
         })
-      })
-    } else {
-      channel.sendToQueue(channelName, Buffer.from(JSON.stringify(order)), {
-        persistent: true,
-      })
+      }
+    } catch (error) {
+      this.logger.error('❌ Error in sendToQueue:', error)
+      throw error
     }
-  } catch (error) {
-    logger.error('Error in sendToQue:', error)
-    throw error
+  }
+
+  public async cancelQueue(queueName: string): Promise<void> {
+    if (!this.channel) {
+      this.logger.error('❌ Channel is not initialized.')
+      return
+    }
+
+    try {
+      await this.channel.purgeQueue(queueName)
+    } catch (error) {
+      this.logger.error('❌ Error in cancelQueue:', error)
+      throw error
+    }
   }
 }
-
-const cancelQueue = async (queue: string): Promise<void> => {
-  try {
-    await channel.purgeQueue(queue)
-  } catch (err) {
-    logger.error('Error in cancelQueue:', err)
-    throw err
-  }
-}
-
-export { sendToQue, initRabbitMq, cancelQueue }

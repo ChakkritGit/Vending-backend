@@ -9,7 +9,7 @@ import { Prescription, ResponsePres } from 'src/types/global'
 import { Orders } from '@prisma/client'
 import { getDateFormat } from 'src/utils/date.format'
 import { PrismaService } from 'src/prisma/prisma.service'
-import { cancelQueue } from 'src/services/rabbit.mq'
+import { RabbitMQService } from 'src/services/rabbit.mq'
 
 @Injectable()
 export class DispenseService {
@@ -203,11 +203,12 @@ export class DispenseService {
   }
 
   async clearPresOrder () {
+    const rabbit = RabbitMQService.getInstance()
     await this.prisma.$transaction([
       this.prisma.orders.deleteMany(),
       this.prisma.prescriptions.deleteMany(),
     ])
-    await cancelQueue('vdOrder')
+    await rabbit.cancelQueue('vdOrder')
     return 'Successfully'
   }
 }

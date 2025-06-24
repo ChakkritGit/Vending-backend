@@ -11,14 +11,79 @@ import { OrderQueType } from 'src/types/global'
 
 @Controller('dispense')
 export class DispenseController {
-  constructor (private readonly dispenseService: DispenseService) {}
+  constructor(private readonly dispenseService: DispenseService) { }
 
   @Get(':id')
-  async dispense (@Param('id') id: string) {
+  async dispense(@Param('id') id: string) {
     const readyToDispense = await this.dispenseService.findPrescription()
     if (!!readyToDispense)
       throw new BadRequestException('รายการนี้กำลังถูกจัดอยู่!')
-    const response = await this.dispenseService.getPharmacyPres(id)
+    // const response = await this.dispenseService.getPharmacyPres(id)
+    const response = {
+      "RFID": "7",
+      "PrescriptionNo": "00001",
+      "HN": "TEST01",
+      "PatientName": "ทดสอบ ระบบ 01",
+      "Prescription": [
+        {
+          "f_prescriptionno": "00001",
+          "f_prescriptiondate": "20230508",
+          "f_hn": "TEST01",
+          "f_an": "TEST01",
+          "f_patientname": "ทดสอบ ระบบ 01",
+          "f_wardcode": "W01",
+          "f_warddesc": "WARD 01",
+          "f_prioritycode": "C",
+          "f_prioritydesc": "Con",
+          "f_orderitemcode": "AIRT120",
+          "f_orderitemname": "AIR X TAB. *** 120 MG",
+          "f_orderqty": "3",
+          "f_orderunitcode": "TAB",
+          "Machine": "ADD",
+          "command": "B0112D0003S1D4321",
+          "f_binlocation": "12",
+          "RowID": "8BD48732-E011-420D-B307-8891EF718C0B"
+        },
+        {
+          "f_prescriptionno": "00001",
+          "f_prescriptiondate": "20230508",
+          "f_hn": "TEST01",
+          "f_an": "TEST01",
+          "f_patientname": "ทดสอบ ระบบ 01",
+          "f_wardcode": "W01",
+          "f_warddesc": "WARD 01",
+          "f_prioritycode": "C",
+          "f_prioritydesc": "Con",
+          "f_orderitemcode": "ATOTT40",
+          "f_orderitemname": "ATORVASTATIN TAB 40 MG (TOVASTIN)",
+          "f_orderqty": "1",
+          "f_orderunitcode": "TAB",
+          "Machine": "ADD",
+          "command": "B0123D0001S1D4321",
+          "f_binlocation": "23",
+          "RowID": "DED7795B-3989-4C97-B8E0-230B0071BF73"
+        },
+        {
+          "f_prescriptionno": "00001",
+          "f_prescriptiondate": "20230508",
+          "f_hn": "TEST01",
+          "f_an": "TEST01",
+          "f_patientname": "ทดสอบ ระบบ 01",
+          "f_wardcode": "W01",
+          "f_warddesc": "WARD 01",
+          "f_prioritycode": "C",
+          "f_prioritydesc": "Con",
+          "f_orderitemcode": "CALT1",
+          "f_orderitemname": "CALTAB TAB. 1,000 MG",
+          "f_orderqty": "1",
+          "f_orderunitcode": "TAB",
+          "Machine": "ADD",
+          "command": "B0141D0001S1D4321",
+          "f_binlocation": "41",
+          "RowID": "069B5250-229A-49B8-BDD8-A2B48A1167CC"
+        }
+      ]
+    }
     const finished = await this.dispenseService.findPrescriptionFinished(response.PrescriptionNo)
     if (finished) throw new BadRequestException('รายการนี้ถูกจัดแล้ว!')
     const result = await this.dispenseService.createPresAndOrder(response)
@@ -38,7 +103,7 @@ export class DispenseController {
   }
 
   @Get('order/status/pending/:id/:presId')
-  async updateOrderPendingStatus (
+  async updateOrderPendingStatus(
     @Param('id') id: string,
     @Param('presId') presId: string,
   ) {
@@ -51,7 +116,7 @@ export class DispenseController {
   }
 
   @Get('order/status/receive/:id/:presId')
-  async updateOrderReceiveStatus (
+  async updateOrderReceiveStatus(
     @Param('id') id: string,
     @Param('presId') presId: string,
   ) {
@@ -64,7 +129,7 @@ export class DispenseController {
   }
 
   @Get('order/status/complete/:id/:presId')
-  async updateOrderCompleteStatus (
+  async updateOrderCompleteStatus(
     @Param('id') id: string,
     @Param('presId') presId: string,
   ) {
@@ -77,7 +142,7 @@ export class DispenseController {
   }
 
   @Get('order/status/error/:id/:presId')
-  async updateOrderErrorStatus (
+  async updateOrderErrorStatus(
     @Param('id') id: string,
     @Param('presId') presId: string,
   ) {
@@ -90,7 +155,7 @@ export class DispenseController {
   }
 
   @Get('order/status/ready/:id/:presId')
-  async updateOrderReadyStatus (
+  async updateOrderReadyStatus(
     @Param('id') id: string,
     @Param('presId') presId: string,
   ) {
@@ -103,13 +168,13 @@ export class DispenseController {
   }
 
   @Get('prescription/order')
-  async getOrder () {
+  async getOrder() {
     const result = await this.dispenseService.getOrder()
     return result
   }
 
   @Get('prescription/order/clear')
-  async clearPresOrder () {
+  async clearPresOrder() {
     const result = await this.dispenseService.clearPresOrder()
     return result
   }

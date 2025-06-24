@@ -9,15 +9,17 @@ import { join } from 'path';
 @Module({
   imports: [
     PrismaModule,
+
     MulterModule.register({
-      dest: './uploads/drugs',
+      dest: join(process.cwd(), 'uploads', 'drugs'),
     }),
+
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, process.env.NODE_ENV === 'development' ? '../..' : '..', 'uploads'),
+      rootPath: join(process.cwd(), 'uploads'),
       serveRoot: '/uploads',
-    })
+    }),
   ],
   controllers: [DrugsController],
   providers: [DrugsService],
 })
-export class DrugsModule {}
+export class DrugsModule { }

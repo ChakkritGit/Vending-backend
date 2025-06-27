@@ -18,7 +18,7 @@ model Users {
   username  String   @unique @db.VarChar(155)
   password  String   @db.VarChar(155)
   display   String   @db.VarChar(150)
-  role      Role     @default(USER)
+  role      Role     @default(NURSE)
   picture   String?  @db.VarChar(255)
   status    Boolean  @default(true)
   comment   String?  @db.VarChar(155)
@@ -134,6 +134,9 @@ model Prescriptions {
 
 enum Role {
   SUPER
-  ADMIN
-  USER
+  SERVICE
+  PHARMACIST
+  PHARMACIST_ASSISTANCE
+  HEAD_NURSE
+  NURSE
 }

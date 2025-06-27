@@ -96,7 +96,7 @@ export class AuthService {
       if (!isPasswordValid)
         throw new HttpException('รหัสผ่านไม่ถูกต้อง!', HttpStatus.BAD_REQUEST)
 
-      if (decoded.role === 'USER' || user.role === 'USER') {
+      if (decoded.role === 'NURSE' || user.role === 'NURSE') {
         throw new HttpException('คุณไม่มีสิทธ์ยืนยัน!', HttpStatus.BAD_REQUEST)
       }
 

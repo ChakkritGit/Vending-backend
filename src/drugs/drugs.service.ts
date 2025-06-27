@@ -53,7 +53,7 @@ export class DrugsService {
     try {
       const formattedDrugExpire = parse(
         String(drugExpire),
-        'dd/MM/yyyy',
+        'dd-MM-yyyy',
         new Date(),
       )
 
@@ -108,6 +108,7 @@ export class DrugsService {
 
   async update (id: string, updateDrugDto: Drugs) {
     const {
+      drugCode,
       drugName,
       status,
       unit,
@@ -118,8 +119,9 @@ export class DrugsService {
       picture,
       comment,
     } = updateDrugDto
+
     const drug = await this.prisma.drugs.findUnique({
-      where: { drugCode: id },
+      where: { id },
     })
 
     if (!drug) {
@@ -135,21 +137,22 @@ export class DrugsService {
     try {
       const formattedDrugExpire = parse(
         String(drugExpire),
-        'dd/MM/yyyy',
+        'dd-MM-yyyy',
         new Date(),
       )
 
       const result = await this.prisma.drugs.update({
-        where: { drugCode: id },
+        where: { id },
         data: {
+          picture: picture,
+          drugCode,
           drugName,
           unit,
+          weight: Number(weight),
           drugLot: drugLot,
           drugExpire: formattedDrugExpire,
           drugPriority: Number(drugPriority),
-          picture: picture,
-          weight: Number(weight),
-          status: String(status) === '0' ? false : true,
+          status: String(status) === 'true' ? true : false,
           comment: comment,
           updatedAt: getDateFormat(new Date()),
         },
@@ -160,6 +163,7 @@ export class DrugsService {
       return result
     } catch (error) {
       if (picture) await this.deleteFile(picture)
+      console.error(error)
       throw new HttpException(
         'เกิดข้อผิดพลาดขณะแก้ไขยา!',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -169,12 +173,15 @@ export class DrugsService {
 
   async remove (id: string) {
     const drug = await this.prisma.drugs.findFirst({
-      where: { drugCode: id },
+      where: { id },
     })
+
     if (!drug) throw new HttpException('ไม่พบยา!', HttpStatus.NOT_FOUND)
+
     const result = await this.prisma.drugs.delete({
-      where: { drugCode: id },
+      where: { id },
     })
+
     await this.deleteFile(result.picture)
     return 'ยาถูกลบแล้ว!'
   }

@@ -91,13 +91,23 @@ export class InventoryService {
       where: { id },
     })
 
-    if (!inventory)
+    if (!inventory) {
       throw new HttpException('ไม่พบช่องสินค้า!', HttpStatus.NOT_FOUND)
+    }
 
-    await this.prisma.inventory.delete({
-      where: { id },
-    })
+    try {
+      const result = await this.prisma.inventory.deleteMany({
+        where: { id },
+      })
 
-    return 'ช่องสินค้าถูกลบแล้ว!'
+      if (result.count > 0) {
+        return 'ช่องสินค้าถูกลบแล้ว!'
+      }
+    } catch (error) {
+      throw new HttpException(
+        'ไม่สามารถลบช่องได้ กรุณาตรวจสอบการจัดกรุ๊ปหรือข้อมูลที่เชื่อมโยง!',
+        HttpStatus.BAD_REQUEST,
+      )
+    }
   }
 }

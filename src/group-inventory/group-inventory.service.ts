@@ -268,26 +268,29 @@ export class GroupInventoryService {
         },
       })
 
-      const formattedResult = result.map(inv => {
-        const groupData =
-          inv.GroupInventory.length > 0
-            ? inv.GroupInventory[0].group.drug
-            : null
+      const formattedResult = result
+        .filter(
+          inv =>
+            inv.GroupInventory.length > 0 &&
+            inv.GroupInventory[0].group.drug !== null,
+        )
+        .map(inv => {
+          const groupDrug = inv.GroupInventory[0].group.drug
 
-        return {
-          inventoryId: inv.id,
-          inventoryPosition: inv.position,
-          inventoryQty: inv.qty,
-          inventoryMin: inv.min,
-          inventoryMAX: inv.max,
-          inventoryStatus: inv.status,
-          drugId: groupData ? groupData.id : null,
-          drugName: groupData ? groupData.drugName : null,
-          drugUnit: groupData ? groupData.unit : null,
-          drugImage: groupData ? groupData.picture : null,
-          drugPriority: groupData ? groupData.drugPriority : null,
-        }
-      })
+          return {
+            inventoryId: inv.id,
+            inventoryPosition: inv.position,
+            inventoryQty: inv.qty,
+            inventoryMin: inv.min,
+            inventoryMAX: inv.max,
+            inventoryStatus: inv.status,
+            drugId: groupDrug.id,
+            drugName: groupDrug.drugName,
+            drugUnit: groupDrug.unit,
+            drugImage: groupDrug.picture,
+            drugPriority: groupDrug.drugPriority,
+          }
+        })
 
       return formattedResult
     } catch (error) {
@@ -302,7 +305,7 @@ export class GroupInventoryService {
         where: { id },
         data: {
           qty: inventoryQty,
-          updatedAt: new Date()
+          updatedAt: new Date(),
         },
       })
       return result

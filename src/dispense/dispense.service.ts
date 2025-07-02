@@ -84,7 +84,7 @@ export class DispenseService {
           drugPriority: matchedDrug.drugPriority,
           position: parseInt(item.f_binlocation),
           status: 'ready',
-          machineId: 'MAC-e6cde190-b9ee-4934-b53f-88db73c40d5d',
+          machineId: 'MAC-053770c7-d5ab-49fb-83b7-dd613bb39af0',
           comment: '',
           createdAt: new Date(),
           updatedAt: new Date(),

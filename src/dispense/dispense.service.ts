@@ -171,7 +171,7 @@ export class DispenseService {
       })
     }
 
-    const result = await this.prisma.prescriptions.findFirst({
+    await this.prisma.prescriptions.findFirst({
       where: {
         id: presId,
         AND: { order: { every: { status: { contains: 'complete' } } } },
@@ -179,7 +179,7 @@ export class DispenseService {
       include: { order: true },
     })
 
-    return result
+    return "Successfully"
   }
 
   async getOrder () {

@@ -256,6 +256,7 @@ export class GroupInventoryService {
                       unit: true,
                       picture: true,
                       drugPriority: true,
+                      drugExpire: true
                     },
                   },
                 },
@@ -289,6 +290,7 @@ export class GroupInventoryService {
             drugUnit: groupDrug.unit,
             drugImage: groupDrug.picture,
             drugPriority: groupDrug.drugPriority,
+            drugExpire: groupDrug.drugExpire
           }
         })
 

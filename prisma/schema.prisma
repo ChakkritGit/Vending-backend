@@ -14,16 +14,29 @@ datasource db {
 }
 
 model Users {
-  id        String   @id @db.VarChar(100)
-  username  String   @unique @db.VarChar(155)
-  password  String   @db.VarChar(155)
-  display   String   @db.VarChar(150)
-  role      Role     @default(NURSE)
-  picture   String?  @db.VarChar(255)
-  status    Boolean  @default(true)
-  comment   String?  @db.VarChar(155)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
+  id         String           @id @db.VarChar(100)
+  username   String           @unique @db.VarChar(155)
+  password   String           @db.VarChar(155)
+  display    String           @db.VarChar(150)
+  role       Role             @default(NURSE)
+  picture    String?          @db.VarChar(255)
+  status     Boolean          @default(true)
+  comment    String?          @db.VarChar(155)
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @default(now()) @updatedAt
+  biometrics UserBiometrics[]
+}
+
+model UserBiometrics {
+  id          String   @id @default(cuid())
+  type        String   @default("FINGER_VEIN")
+  featureData String   @db.Text
+  description String?  @db.VarChar(255)
+  createdAt   DateTime @default(now())
+  userId      String   @db.VarChar(100)
+  user        Users    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model Drugs {

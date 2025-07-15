@@ -30,7 +30,7 @@ model Users {
 model UserBiometrics {
   id          String   @id @default(cuid())
   type        String   @default("FINGER_VEIN")
-  featureData String   @db.Text
+  featureData Bytes    @db.ByteA
   description String?  @db.VarChar(255)
   createdAt   DateTime @default(now())
   userId      String   @db.VarChar(100)

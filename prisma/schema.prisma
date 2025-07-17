@@ -28,7 +28,7 @@ model Users {
 }
 
 model UserBiometrics {
-  id          String   @id @default(cuid())
+  id          String   @id @unique @db.VarChar(100)
   type        String   @default("FINGER_VEIN")
   featureData Bytes    @db.ByteA
   description String?  @db.VarChar(255)

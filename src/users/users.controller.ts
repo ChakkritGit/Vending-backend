@@ -17,6 +17,7 @@ import { diskStorage } from 'multer'
 import { extname, join } from 'path'
 import { existsSync, mkdirSync } from 'fs'
 import { v4 as uuidv4 } from 'uuid'
+import { UserType } from 'src/types/userType'
 
 @Controller('users')
 export class UsersController {
@@ -43,7 +44,7 @@ export class UsersController {
   )
   create(
     @UploadedFile() file: Express.Multer.File,
-    @Body() createUserDto: Users,
+    @Body() createUserDto: UserType,
   ) {
     if (file) {
       createUserDto.picture = `/uploads/users/${file.filename}`

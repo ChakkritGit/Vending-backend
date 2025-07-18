@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { getDateFormat } from 'src/utils/date.format'
 import * as bcrypt from 'bcrypt'
 import * as fs from 'fs/promises'
+import { BiometricsType, UserType } from 'src/types/userType'
 
 @Injectable()
 export class UsersService {
@@ -22,9 +23,11 @@ export class UsersService {
     }
   }
 
-  async create (createUserDto: Users) {
+  async create (createUserDto: UserType) {
     const { username, password, display, picture, role, comment } =
       createUserDto
+
+    let biometrics: BiometricsType[] = []
 
     const userExits = await this.prisma.users.findUnique({
       where: { username: username },
@@ -38,8 +41,28 @@ export class UsersService {
       )
     }
 
+    if (createUserDto.biometrics) {
+      try {
+        const parsedBiometrics =
+          typeof createUserDto.biometrics === 'string'
+            ? JSON.parse(createUserDto.biometrics as any)
+            : createUserDto.biometrics
+
+        if (Array.isArray(parsedBiometrics)) {
+          biometrics = parsedBiometrics
+        }
+      } catch (e) {
+        console.warn(
+          'Invalid biometrics format received:',
+          createUserDto.biometrics,
+        )
+      }
+    }
+
     try {
       const hashedPassword = await bcrypt.hash(password, 10)
+      const uid = `UID-${uuidv4()}`
+      const bioId = `BID-${uuidv4()}`
 
       const result = await this.prisma.users.create({
         select: {
@@ -52,9 +75,16 @@ export class UsersService {
           comment: true,
           createdAt: true,
           updatedAt: true,
+          biometrics: {
+            select: {
+              id: true,
+              type: true,
+              description: true,
+            },
+          },
         },
         data: {
-          id: `UID-${uuidv4()}`,
+          id: uid,
           username: username.toLowerCase(),
           password: hashedPassword,
           display: display,
@@ -63,12 +93,20 @@ export class UsersService {
           comment: comment,
           createdAt: getDateFormat(new Date()),
           updatedAt: getDateFormat(new Date()),
+          biometrics: {
+            create: biometrics.map(bio => ({
+              id: bioId,
+              featureData: Buffer.from(bio.featureData, 'base64'),
+              description: bio.description,
+            })),
+          },
         },
       })
 
       return result
     } catch (error) {
       if (picture) await this.deleteFile(picture)
+      console.error(error)
 
       throw new HttpException(
         'เกิดข้อผิดพลาดขณะเพิ่มผู้ใช้!',
@@ -77,42 +115,69 @@ export class UsersService {
     }
   }
 
-  findAll () {
-    return this.prisma.users.findMany({
-      select: {
-        id: true,
-        username: true,
-        display: true,
-        picture: true,
-        role: true,
-        status: true,
-        comment: true,
-        createdAt: true,
-        updatedAt: true,
+  async findAll () {
+    const usersWithBiometrics = await this.prisma.users.findMany({
+      include: {
+        biometrics: true,
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: {
+        createdAt: 'desc',
+      },
     })
+
+    const results = usersWithBiometrics.map(user => {
+      const transformedBiometrics = user.biometrics.map(bio => ({
+        id: bio.id,
+        userId: bio.userId,
+        type: bio.type,
+        featureData: Buffer.from(bio.featureData).toString('base64'),
+        description: bio.description,
+        createdAt: bio.createdAt,
+      }))
+
+      return {
+        id: user.id,
+        username: user.username,
+        display: user.display,
+        picture: user.picture,
+        role: user.role,
+        status: user.status,
+        comment: user.comment,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+        biometrics: transformedBiometrics,
+      }
+    })
+
+    return results
   }
 
   async findOne (id: string) {
     const user = await this.prisma.users.findUnique({
-      select: {
-        id: true,
-        username: true,
-        display: true,
-        picture: true,
-        role: true,
-        status: true,
-        comment: true,
-        createdAt: true,
-        updatedAt: true,
+      where: { id },
+      include: {
+        biometrics: true,
       },
-      where: { id: id },
     })
 
-    if (!user) throw new HttpException('ไม่พบผู้ใช้!', HttpStatus.NOT_FOUND)
+    if (!user) {
+      throw new HttpException('ไม่พบผู้ใช้!', HttpStatus.NOT_FOUND)
+    }
 
-    return user
+    const transformedBiometrics = user.biometrics.map(bio => ({
+      id: bio.id,
+      userId: bio.userId,
+      type: bio.type,
+      featureData: Buffer.from(bio.featureData).toString('base64'),
+      description: bio.description,
+      createdAt: bio.createdAt,
+    }))
+    const { password, ...userWithoutPassword } = user
+
+    return {
+      ...userWithoutPassword,
+      biometrics: transformedBiometrics,
+    }
   }
 
   async update (id: string, updateUserDto: Users) {
@@ -178,6 +243,7 @@ export class UsersService {
     try {
       const result = await this.prisma.users.delete({
         where: { id },
+        include: { biometrics: true },
       })
       await this.deleteFile(result.picture)
       return 'ผู้ใช้ถูกลบไปแล้ว!'

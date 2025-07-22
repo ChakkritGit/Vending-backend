@@ -27,7 +27,7 @@ export class UsersService {
     const { username, password, display, picture, role, comment } =
       createUserDto
 
-    let biometrics: BiometricsType[] = []
+    // let biometrics: BiometricsType[] = []
 
     const userExits = await this.prisma.users.findUnique({
       where: { username: username },
@@ -41,28 +41,28 @@ export class UsersService {
       )
     }
 
-    if (createUserDto.biometrics) {
-      try {
-        const parsedBiometrics =
-          typeof createUserDto.biometrics === 'string'
-            ? JSON.parse(createUserDto.biometrics as any)
-            : createUserDto.biometrics
+    // if (createUserDto.biometrics) {
+    //   try {
+    //     const parsedBiometrics =
+    //       typeof createUserDto.biometrics === 'string'
+    //         ? JSON.parse(createUserDto.biometrics as any)
+    //         : createUserDto.biometrics
 
-        if (Array.isArray(parsedBiometrics)) {
-          biometrics = parsedBiometrics
-        }
-      } catch (e) {
-        console.warn(
-          'Invalid biometrics format received:',
-          createUserDto.biometrics,
-        )
-      }
-    }
+    //     if (Array.isArray(parsedBiometrics)) {
+    //       biometrics = parsedBiometrics
+    //     }
+    //   } catch (e) {
+    //     console.warn(
+    //       'Invalid biometrics format received:',
+    //       createUserDto.biometrics,
+    //     )
+    //   }
+    // }
 
     try {
       const hashedPassword = await bcrypt.hash(password, 10)
       const uid = `UID-${uuidv4()}`
-      const bioId = `BID-${uuidv4()}`
+      // const bioId = `BID-${uuidv4()}`
 
       const result = await this.prisma.users.create({
         select: {
@@ -93,13 +93,13 @@ export class UsersService {
           comment: comment,
           createdAt: getDateFormat(new Date()),
           updatedAt: getDateFormat(new Date()),
-          biometrics: {
-            create: biometrics.map(bio => ({
-              id: bioId,
-              featureData: Buffer.from(bio.featureData, 'base64'),
-              description: bio.description,
-            })),
-          },
+          // biometrics: {
+          //   create: biometrics.map(bio => ({
+          //     id: bioId,
+          //     featureData: Buffer.from(bio.featureData, 'base64'),
+          //     description: bio.description,
+          //   })),
+          // },
         },
       })
 
@@ -130,7 +130,6 @@ export class UsersService {
         id: bio.id,
         userId: bio.userId,
         type: bio.type,
-        featureData: Buffer.from(bio.featureData).toString('base64'),
         description: bio.description,
         createdAt: bio.createdAt,
       }))

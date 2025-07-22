@@ -1,15 +1,6 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-} from '@nestjs/common'
+import { Body, Controller, Get, Param, Patch } from '@nestjs/common'
 import { ConfigService } from './config.service'
-import { CreateConfigDto } from './dto/create-config.dto'
-import { UpdateConfigDto } from './dto/update-config.dto'
+import { UserBiometrics } from '@prisma/client'
 
 @Controller('config')
 export class ConfigController {
@@ -18,5 +9,15 @@ export class ConfigController {
   @Get('user')
   findAll () {
     return this.configService.findAll()
+  }
+
+  @Get('fingerprint/:id')
+  findFingerprintByUserId (@Param('id') id: string) {
+    return this.configService.findFingerprint(id)
+  }
+
+  @Patch('fingerprint/:id')
+  updateFungerprint (@Param('id') id: string, @Body() bio: UserBiometrics) {
+    return this.configService.updateFingerprint(id, bio)
   }
 }

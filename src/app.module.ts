@@ -15,9 +15,9 @@ import { PrescriptionsModule } from './prescriptions/prescriptions.module'
 import { LoggerMiddleware } from './utils/logger.middleware'
 import { OrdersModule } from './orders/orders.module'
 import { DispenseModule } from './dispense/dispense.module'
-import { GroupInventoryModule } from './group-inventory/group-inventory.module';
-import { ReportsModule } from './reports/reports.module';
-import { ConfigUserModule } from './config/config.module';
+import { GroupInventoryModule } from './group-inventory/group-inventory.module'
+import { ReportsModule } from './reports/reports.module'
+import { ConfigUserModule } from './config/config.module'
 
 @Module({
   imports: [

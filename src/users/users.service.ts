@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { getDateFormat } from 'src/utils/date.format'
 import * as bcrypt from 'bcrypt'
 import * as fs from 'fs/promises'
-import { BiometricsType, UserType } from 'src/types/userType'
+import {  UserType } from 'src/types/userType'
 
 @Injectable()
 export class UsersService {

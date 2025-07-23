@@ -1,9 +1,10 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
-import { CreateConfigDto } from './dto/create-config.dto'
-import { UpdateConfigDto } from './dto/update-config.dto'
-import { Prisma, UserBiometrics } from '@prisma/client'
+import { UserBiometrics } from '@prisma/client'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { buffer } from 'stream/consumers'
+import { UserFingerprintType } from 'src/types/userType'
+import { v4 as uuidv4 } from 'uuid'
+import { getDateFormat } from 'src/utils/date.format'
 
 @Injectable()
 export class ConfigService {
@@ -25,18 +26,22 @@ export class ConfigService {
   }
 
   async findFingerprint (id: string) {
-    const findFingerprint = await this.prisma.userBiometrics.findMany({
-      where: { userId: id },
+    const findFingerprint = await this.prisma.users.findFirst({
+      where: { id },
       select: {
-        id: true,
-        userId: true,
-        type: true,
-        description: true,
-        createdAt: true,
+        biometrics: {
+          select: {
+            id: true,
+            userId: true,
+            type: true,
+            description: true,
+            createdAt: true,
+          },
+        },
       },
     })
 
-    if (findFingerprint.length === 0) {
+    if (!findFingerprint) {
       throw new HttpException('ไม่พบข้อมูลลายนิ้วมือ!', HttpStatus.NOT_FOUND)
     }
 
@@ -48,17 +53,50 @@ export class ConfigService {
       where: { id },
     })
 
-    if(!findFinger) {
+    if (!findFinger) {
       throw new HttpException('ไม่พบข้อมูลลายนิ้วมือ!', HttpStatus.NOT_FOUND)
     }
 
     await this.prisma.userBiometrics.update({
-      where: {id},
+      where: { id },
       data: {
-        description: bio.description
+        description: bio.description,
+      },
+    })
+
+    return 'อัปเดทข้อมูลลายนิ้วมือสำเร็จ!'
+  }
+
+  async deleteFungerprint (id: string) {
+    const findFinger = await this.prisma.userBiometrics.findUnique({
+      where: { id },
+    })
+
+    if (!findFinger) {
+      throw new HttpException('ไม่พบข้อมูลลายนิ้วมือ!', HttpStatus.NOT_FOUND)
+    }
+
+    await this.prisma.userBiometrics.delete({
+      where: { id },
+    })
+
+    return 'ลบลายนิ้วมือสำเร็จ!'
+  }
+
+  async createFingerprint (body: UserFingerprintType) {
+    const bioId = `BID-${uuidv4()}`
+
+
+    await this.prisma.userBiometrics.create({
+      data: {
+        id: bioId,
+        userId: body.userId,
+        featureData: Buffer.from(body.featureData, 'base64'),
+        description: body.description,
+        createdAt: getDateFormat(new Date())
       }
     })
 
-    return "อัปเดทข้อมูลลายนิ้วมือสำเร็จ!"
+    return 'เพิ่มลายนิ้วมือสำเร็จ!'
   }
 }

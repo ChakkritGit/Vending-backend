@@ -23,4 +23,10 @@ type BiometricsType = {
   userId: string
 }
 
-export type { UserType, BiometricsType }
+type UserFingerprintType = {
+  userId: string,
+  featureData: string
+  description: string
+}
+
+export type { UserType, BiometricsType, UserFingerprintType }

@@ -41,11 +41,7 @@ export class ConfigService {
       },
     })
 
-    if (!findFingerprint) {
-      throw new HttpException('ไม่พบข้อมูลลายนิ้วมือ!', HttpStatus.NOT_FOUND)
-    }
-
-    return findFingerprint
+    return findFingerprint.biometrics
   }
 
   async updateFingerprint (id: string, bio: UserBiometrics) {

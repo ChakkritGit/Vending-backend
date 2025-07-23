@@ -39,6 +39,7 @@ export class ConfigService {
           },
         },
       },
+      orderBy: { createdAt: 'asc' },
     })
 
     return findFingerprint.biometrics
@@ -82,15 +83,14 @@ export class ConfigService {
   async createFingerprint (body: UserFingerprintType) {
     const bioId = `BID-${uuidv4()}`
 
-
     await this.prisma.userBiometrics.create({
       data: {
         id: bioId,
         userId: body.userId,
         featureData: Buffer.from(body.featureData, 'base64'),
         description: body.description,
-        createdAt: getDateFormat(new Date())
-      }
+        createdAt: getDateFormat(new Date()),
+      },
     })
 
     return 'เพิ่มลายนิ้วมือสำเร็จ!'

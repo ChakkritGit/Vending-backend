@@ -22,7 +22,8 @@ export class AuthService {
       where: { username: username.toLocaleLowerCase() },
     })
 
-    if (!user) throw new HttpException('ไม่พบชื่อผู้ใช้นี้!', HttpStatus.NOT_FOUND)
+    if (!user)
+      throw new HttpException('ไม่พบชื่อผู้ใช้นี้!', HttpStatus.NOT_FOUND)
 
     if (!user.status)
       throw new HttpException(
@@ -56,13 +57,14 @@ export class AuthService {
   }
 
   async loginWithFingerprint (loginBody: UserLoginWithFingerType) {
-    const { uid } = loginBody
+    const { bid } = loginBody
 
     const user = await this.prisma.users.findFirst({
-      where: { id: uid },
+      where: { biometrics: { some: { id: bid } } },
     })
 
-    if (!user) throw new HttpException('ไม่พบชื่อผู้ใช้นี้!', HttpStatus.NOT_FOUND)
+    if (!user)
+      throw new HttpException('ไม่พบชื่อผู้ใช้นี้!', HttpStatus.NOT_FOUND)
 
     if (!user.status)
       throw new HttpException(

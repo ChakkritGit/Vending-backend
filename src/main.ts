@@ -14,6 +14,8 @@ async function bootstrap () {
   const rabbit = RabbitMQService.getInstance()
   const documentFactory = () => SwaggerModule.createDocument(app, config)
 
+  app.enableShutdownHooks()
+
   app.enableCors({ origin: '*' })
   const config = new DocumentBuilder()
     .setTitle('Vending')

@@ -30,7 +30,7 @@ type UserFingerprintType = {
 }
 
 type UserLoginWithFingerType = {
-  bid: string
+  uid: string
 }
 
 export type { UserType, BiometricsType, UserFingerprintType, UserLoginWithFingerType }

@@ -56,10 +56,10 @@ export class AuthService {
   }
 
   async loginWithFingerprint (loginBody: UserLoginWithFingerType) {
-    const { bid } = loginBody
+    const { uid } = loginBody
 
     const user = await this.prisma.users.findFirst({
-      where: { biometrics: { some: { id: bid } } },
+      where: { id: uid },
     })
 
     if (!user) throw new HttpException('ไม่พบชื่อผู้ใช้นี้!', HttpStatus.NOT_FOUND)

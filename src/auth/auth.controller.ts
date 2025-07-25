@@ -1,6 +1,7 @@
 import { Controller, Post, Body, Patch, Param, HttpCode, Headers } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Users } from '@prisma/client';
+import { UserLoginWithFingerType } from 'src/types/userType';
 
 @Controller('auth')
 export class AuthController {
@@ -10,6 +11,12 @@ export class AuthController {
   @HttpCode(200)
   login(@Body() createAuthDto: Users) {
     return this.authService.login(createAuthDto);
+  }
+
+    @Post('login/vein')
+  @HttpCode(200)
+  loginWithFingerprint(@Body() createAuthDto: UserLoginWithFingerType) {
+    return this.authService.loginWithFingerprint(createAuthDto);
   }
 
   @Patch('reset/:id')

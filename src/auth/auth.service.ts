@@ -6,6 +6,7 @@ import { JwtService } from '@nestjs/jwt'
 import * as bcrypt from 'bcrypt'
 import { jwtDecode } from 'jwt-decode'
 import { TokenType } from 'src/types/global'
+import { UserLoginWithFingerType } from 'src/types/userType'
 
 @Injectable()
 export class AuthService {
@@ -16,25 +17,31 @@ export class AuthService {
 
   async login (loginBody: CreateAuthDto) {
     const { username, password } = loginBody
+
     const user = await this.prisma.users.findFirst({
       where: { username: username.toLocaleLowerCase() },
     })
-    if (!user)
-      throw new HttpException('ไม่พบชื่อผู้ใช้นี้!', HttpStatus.NOT_FOUND)
+
+    if (!user) throw new HttpException('ไม่พบชื่อผู้ใช้นี้!', HttpStatus.NOT_FOUND)
+
     if (!user.status)
       throw new HttpException(
         'ชื่อผู้ใช้นี้ถูกปิดใช้งานแล้ว!',
         HttpStatus.BAD_REQUEST,
       )
+
     const isPasswordValid = await bcrypt.compare(password, user.password)
+
     if (!isPasswordValid)
       throw new HttpException('รหัสผ่านไม่ถูกต้อง!', HttpStatus.BAD_REQUEST)
+
     const token = this.jwtService.sign({
       id: user.id,
       display: user.display,
       role: user.role,
       status: user.status,
     })
+
     const result = {
       id: user.id,
       username: user.username,
@@ -44,6 +51,42 @@ export class AuthService {
       role: user.role,
       token: token,
     }
+
+    return result
+  }
+
+  async loginWithFingerprint (loginBody: UserLoginWithFingerType) {
+    const { bid } = loginBody
+
+    const user = await this.prisma.users.findFirst({
+      where: { biometrics: { some: { id: bid } } },
+    })
+
+    if (!user) throw new HttpException('ไม่พบชื่อผู้ใช้นี้!', HttpStatus.NOT_FOUND)
+
+    if (!user.status)
+      throw new HttpException(
+        'ชื่อผู้ใช้นี้ถูกปิดใช้งานแล้ว!',
+        HttpStatus.BAD_REQUEST,
+      )
+
+    const token = this.jwtService.sign({
+      id: user.id,
+      display: user.display,
+      role: user.role,
+      status: user.status,
+    })
+
+    const result = {
+      id: user.id,
+      username: user.username,
+      display: user.display,
+      picture: user.picture,
+      status: user.status,
+      role: user.role,
+      token: token,
+    }
+
     return result
   }
 
@@ -101,7 +144,10 @@ export class AuthService {
       }
 
       if (decoded.id === user.id) {
-        throw new HttpException('คุณไม่มีสิทธ์ยืนยันให้ตัวเอง!', HttpStatus.BAD_REQUEST)
+        throw new HttpException(
+          'คุณไม่มีสิทธ์ยืนยันให้ตัวเอง!',
+          HttpStatus.BAD_REQUEST,
+        )
       }
 
       return 'OVERRIDDEN'

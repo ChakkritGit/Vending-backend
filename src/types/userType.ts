@@ -29,4 +29,8 @@ type UserFingerprintType = {
   description: string
 }
 
-export type { UserType, BiometricsType, UserFingerprintType }
+type UserLoginWithFingerType = {
+  bid: string
+}
+
+export type { UserType, BiometricsType, UserFingerprintType, UserLoginWithFingerType }

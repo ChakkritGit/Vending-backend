@@ -69,7 +69,7 @@ export class RabbitMQService {
     }
 
     try {
-      await this.channel.purgeQueue(queueName)
+      await this.channel.deleteQueue(queueName)
     } catch (error) {
       this.logger.error('❌ Error in cancelQueue:', error)
       throw error
